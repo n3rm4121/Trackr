@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import type { Mock } from "vitest";
 import type { Response } from "express";
 import {
   ACCESS_COOKIE,
@@ -24,11 +25,15 @@ describe("cookie helpers", () => {
     };
   });
 
-  const optionsFor = (name: string) => {
-    const call = vi
-      .mocked(res.cookie!)
-      .mock.calls.find(([cookieName]) => cookieName === name);
-    return call?.[2];
+  type CookieOptions = { path?: string; maxAge?: number; httpOnly?: boolean };
+
+  const cookieMock = () => res.cookie as unknown as Mock;
+
+  const optionsFor = (name: string): CookieOptions | undefined => {
+    const call = cookieMock().mock.calls.find(
+      (args: unknown[]) => args[0] === name,
+    );
+    return call?.[2] as CookieOptions | undefined;
   };
 
   describe("setAccessCookie", () => {
@@ -131,8 +136,8 @@ describe("cookie helpers", () => {
       setAccessCookie(res as Response, "a");
       setRefreshCookie(res as Response, "b");
 
-      for (const [, , options] of vi.mocked(res.cookie!).mock.calls) {
-        expect(options).toMatchObject({ sameSite: "lax" });
+      for (const call of cookieMock().mock.calls) {
+        expect(call[2]).toMatchObject({ sameSite: "lax" });
       }
     });
 

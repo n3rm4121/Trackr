@@ -25,3 +25,6 @@ dist-ssr
 
 # Test env files
 .env.test
+
+# Production database credentials
+.env.production

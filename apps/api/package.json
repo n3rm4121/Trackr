@@ -10,7 +10,13 @@
     "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:migrate:local": "DOTENV_CONFIG_PATH=.env drizzle-kit migrate",
+    "db:migrate:remote": "DOTENV_CONFIG_PATH=.env.production drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:check": "drizzle-kit check"
   },
   "keywords": [],
   "author": "",
