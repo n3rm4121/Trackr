@@ -27,7 +27,7 @@ function SignupPage() {
 
     try {
       await register.mutateAsync({ name, email, password });
-      await navigate({ to: "/dashboard" });
+      await navigate({ to: "/dashboard", search: { open: undefined } });
     } catch (error) {
       if (error instanceof ApiError) {
         setFieldErrors(error.fieldErrors);

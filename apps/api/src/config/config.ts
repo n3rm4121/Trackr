@@ -22,7 +22,6 @@ interface Config {
   isProduction: boolean;
   corsOrigins: string[];
   cookieSecure: boolean;
-  /** Base URL of the web app, used to build links that go out in email. */
   appUrl: string;
   smtp: SmtpConfig;
 }

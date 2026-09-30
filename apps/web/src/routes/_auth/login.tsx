@@ -26,7 +26,7 @@ function LoginPage() {
 
     try {
       await login.mutateAsync({ email, password });
-      await navigate({ to: "/dashboard" });
+      await navigate({ to: "/dashboard", search: { open: undefined } });
     } catch (error) {
       if (error instanceof ApiError) {
         setFieldErrors(error.fieldErrors);

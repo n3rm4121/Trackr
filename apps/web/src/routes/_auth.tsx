@@ -8,15 +8,12 @@ import { currentUserQuery } from "@/lib/auth";
  */
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async ({ context }) => {
-    // A signed-in visitor has no business on these pages, so send them to the
-    // dashboard. A failed /auth/me means there is no session, which is exactly
-    // why they are here, so the failure is swallowed rather than thrown.
     const session = await context.queryClient
       .query(currentUserQuery())
       .catch(() => null);
 
     if (session) {
-      throw redirect({ to: "/dashboard" });
+      throw redirect({ to: "/dashboard", search: { open: undefined } });
     }
   },
   component: AuthLayout,

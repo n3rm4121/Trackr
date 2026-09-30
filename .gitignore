@@ -8,6 +8,9 @@ dist-ssr
 .turbo
 .eslintcache
 
+# TanStack Router dev cache
+.tanstack
+
 # Logs
 logs
 *.log

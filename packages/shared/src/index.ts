@@ -9,3 +9,4 @@
 export * from "./schemas/user.schema.js";
 export * from "./schemas/auth.schema.js";
 export * from "./schemas/api.schema.js";
+export * from "./schemas/application.schema.js";

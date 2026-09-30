@@ -2,7 +2,11 @@ import { describe, it, expect, vi } from "vitest";
 import type { Request, Response } from "express";
 import { z } from "zod";
 
-import { parseBody, toValidationIssues } from "../../utils/validation.js";
+import {
+  parseBody,
+  parseParams,
+  toValidationIssues,
+} from "../../utils/validation.js";
 
 const schema = z.object({
   email: z.email(),
@@ -91,5 +95,49 @@ describe("parseBody", () => {
 
     expect(req.body).toBe(body);
     expect(body.email).toBe("  A@B.COM ");
+  });
+});
+
+describe("parseParams", () => {
+  const idSchema = z.object({ id: z.coerce.number().int().positive() });
+
+  it("returns the parsed path params", () => {
+    const res = makeRes();
+    const req = { params: { id: "12" } } as unknown as Request;
+
+    expect(parseParams(idSchema, req, res)).toEqual({ id: 12 });
+  });
+
+  it("answers 400 and returns null when a path id is not usable", () => {
+    const res = makeRes();
+    const req = { params: { id: "abc" } } as unknown as Request;
+
+    expect(parseParams(idSchema, req, res)).toBeNull();
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it("reports the offending param by name", () => {
+    const res = makeRes();
+    const req = { params: { id: "0" } } as unknown as Request;
+
+    parseParams(idSchema, req, res);
+
+    const payload = res.json.mock.calls[0][0] as {
+      code: string;
+      issues: { field: string }[];
+    };
+    expect(payload.code).toBe("VALIDATION_ERROR");
+    expect(payload.issues[0]?.field).toBe("id");
+  });
+
+  it("does not mutate req.params", () => {
+    const res = makeRes();
+    const params = { id: " 12 " };
+    const req = { params } as unknown as Request;
+
+    parseParams(idSchema, req, res);
+
+    expect(req.params).toBe(params);
+    expect(params.id).toBe(" 12 ");
   });
 });

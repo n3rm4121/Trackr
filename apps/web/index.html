@@ -4,7 +4,25 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>web</title>
+    <title>Job Kanban</title>
+    <script>
+      // Runs before first paint so a dark-mode user never sees a white flash.
+      // Kept inline and tiny on purpose; the React hook in lib/use-theme.ts
+      // takes over once mounted.
+      (function () {
+        try {
+          var stored = localStorage.getItem("job-kanban-theme");
+          var dark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.colorScheme = "dark";
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

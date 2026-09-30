@@ -29,7 +29,28 @@ export function parseBody<S extends ZodType>(
   req: Request,
   res: Response,
 ): output<S> | null {
-  const result = schema.safeParse(req.body);
+  return parseWith(schema, req.body, res);
+}
+
+/**
+ * The same guard for values that are not the body: a path id, or a query
+ * string. A route parameter arrives as a string, so this is where "12" becomes
+ * a number — and where "abc" becomes a 400 rather than a query for id NaN.
+ */
+export function parseParams<S extends ZodType>(
+  schema: S,
+  req: Request,
+  res: Response,
+): output<S> | null {
+  return parseWith(schema, req.params, res);
+}
+
+function parseWith<S extends ZodType>(
+  schema: S,
+  value: unknown,
+  res: Response,
+): output<S> | null {
+  const result = schema.safeParse(value);
 
   if (result.success) {
     return result.data;
