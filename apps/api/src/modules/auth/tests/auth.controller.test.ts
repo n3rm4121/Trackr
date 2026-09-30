@@ -32,6 +32,8 @@ describe("AuthController", () => {
       refresh: vi.fn(),
       logout: vi.fn(),
       getCurrentUser: vi.fn(),
+      requestPasswordReset: vi.fn(),
+      resetPassword: vi.fn(),
     } as unknown as AuthService;
 
     controller = new AuthController();
@@ -299,6 +301,99 @@ describe("AuthController", () => {
       expect(clearAuthCookies).toHaveBeenCalledWith(mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(204);
       expect(mockRes.send).toHaveBeenCalled();
+    });
+  });
+
+  describe("forgotPassword", () => {
+    it("should return 400 with per-field issues if email is missing or malformed", async () => {
+      mockReq = { body: { email: "not-an-email" } };
+
+      await controller.forgotPassword(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        issues: [{ field: "email", message: "Enter a valid email address" }],
+      });
+      expect(serviceInstance.requestPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it("should normalise the email before it reaches the service", async () => {
+      mockReq = { body: { email: "  Test@Example.COM " } };
+
+      await controller.forgotPassword(mockReq as Request, mockRes as Response);
+
+      expect(serviceInstance.requestPasswordReset).toHaveBeenCalledWith({
+        email: "test@example.com",
+      });
+    });
+
+    /**
+     * A different status or body for an unknown address would leak which
+     * emails are registered, so the controller always answers the same way.
+     */
+    it("should acknowledge the request without revealing whether the account exists", async () => {
+      mockReq = { body: { email: "nobody@example.com" } };
+
+      await controller.forgotPassword(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).not.toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "If an account exists for that email, a reset link is on its way",
+      });
+    });
+  });
+
+  describe("resetPassword", () => {
+    it("should return 400 with per-field issues if token or password are missing", async () => {
+      mockReq = { body: { token: "a-token" } };
+
+      await controller.resetPassword(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        issues: [
+          {
+            field: "password",
+            message: "Invalid input: expected string, received undefined",
+          },
+        ],
+      });
+      expect(serviceInstance.resetPassword).not.toHaveBeenCalled();
+    });
+
+    it("should confirm the reset on success", async () => {
+      vi.mocked(serviceInstance.resetPassword).mockResolvedValueOnce(
+        undefined as any,
+      );
+      mockReq = { body: { token: "a-token", password: "new-password-1" } };
+
+      await controller.resetPassword(mockReq as Request, mockRes as Response);
+
+      expect(serviceInstance.resetPassword).toHaveBeenCalledWith({
+        token: "a-token",
+        password: "new-password-1",
+      });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "Your password has been reset. You can log in now",
+      });
+    });
+
+    it("should surface the service's rejection for an invalid token", async () => {
+      vi.mocked(serviceInstance.resetPassword).mockRejectedValueOnce(
+        Object.assign(new Error("Invalid or expired reset link"), {
+          status: 400,
+          code: "INVALID_RESET_TOKEN",
+        }),
+      );
+      mockReq = { body: { token: "stale", password: "new-password-1" } };
+
+      await expect(
+        controller.resetPassword(mockReq as Request, mockRes as Response),
+      ).rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
     });
   });
 });

@@ -5,6 +5,9 @@ import {
   loginInputSchema,
   registerInputSchema,
   authResponseSchema,
+  forgotPasswordInputSchema,
+  resetPasswordInputSchema,
+  passwordActionResponseSchema,
   type RegisterInput,
   type AuthResponse,
 } from "./auth.schema.js";
@@ -99,6 +102,63 @@ describe("authResponseSchema", () => {
     expect(result.success).toBe(true);
     expect(result.success && result.data.user).toEqual(validUser);
     expect(result.success && "password" in result.data.user).toBe(false);
+  });
+});
+
+describe("forgotPasswordInputSchema", () => {
+  it("normalises the email, so a pasted address still matches the account", () => {
+    const result = forgotPasswordInputSchema.safeParse({ email: "  PERSON@Example.com " });
+
+    expect(result.success && result.data.email).toBe("person@example.com");
+  });
+
+  it("rejects a malformed address", () => {
+    const result = forgotPasswordInputSchema.safeParse({ email: "not-an-email" });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Enter a valid email address");
+  });
+});
+
+describe("resetPasswordInputSchema", () => {
+  it("accepts a token and a password that meets the strength rules", () => {
+    const result = resetPasswordInputSchema.safeParse({
+      token: "a-token",
+      password: "new-password-1",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("enforces the same strength rules as registration", () => {
+    // A reset is the one way to set a password on an existing account, so a
+    // weak password has to be refused here too or the rule is only cosmetic.
+    const result = resetPasswordInputSchema.safeParse({ token: "a-token", password: "short" });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an empty token", () => {
+    const result = resetPasswordInputSchema.safeParse({ token: "", password: "new-password-1" });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Reset token is required");
+  });
+});
+
+describe("passwordActionResponseSchema", () => {
+  it("accepts the envelope both endpoints send", () => {
+    expect(
+      passwordActionResponseSchema.safeParse({
+        message: "If an account exists for that email, a reset link is on its way",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("leaves no field a caller could use to tell accounts apart", () => {
+    const parsed = passwordActionResponseSchema.parse({ message: "ok" });
+
+    expect(Object.keys(parsed)).toEqual(["message"]);
   });
 });
 

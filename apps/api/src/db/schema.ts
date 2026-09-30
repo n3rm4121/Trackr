@@ -28,3 +28,16 @@ export const sessionsTable = pgTable(
   },
   (table) => [index("sessions_token_hash_idx").on(table.tokenHash)],
 );
+
+export const passwordResetTokensTable = pgTable("password_reset_tokens", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer()
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  // SHA-256 hash of the reset token. The raw token only ever exists in the
+  // emailed link, so a leaked database cannot be used to reset anyone's
+  // password.
+  tokenHash: text().notNull().unique(),
+  expiresAt: timestamp({ withTimezone: true }).notNull(),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+});

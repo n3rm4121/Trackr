@@ -1,7 +1,9 @@
 import { AuthRepository } from "./auth.repository.js";
 import {
   generateAccessToken,
+  generatePasswordResetToken,
   generateRefreshToken,
+  hashPasswordResetToken,
   hashRefreshToken,
 } from "../../utils/token.js";
 import bcrypt from "bcrypt";
@@ -9,7 +11,12 @@ import {
   badCredentials,
   emailAlreadyRegistered,
   invalidRefreshToken,
+  invalidResetToken,
 } from "../../utils/httpError.js";
+import {
+  buildPasswordResetUrl,
+  sendPasswordResetEmail,
+} from "../../utils/mailer.js";
 
 function publicUser(user: { id: number; email: string; name: string }) {
   return { id: user.id, email: user.email, name: user.name };
@@ -110,5 +117,59 @@ export class AuthService {
   async getCurrentUser(userId: number) {
     const user = await this.authRepository.findUserById(userId);
     return user ? publicUser(user) : undefined;
+  }
+
+  // Issues a reset link, or quietly does nothing when no account matches.
+  async requestPasswordReset(input: { email: string }) {
+    const user = await this.authRepository.findUserByEmail(input.email);
+    if (!user) {
+      return;
+    }
+
+    // Retire any earlier link so a leaked older email cannot be replayed.
+    await this.authRepository.deletePasswordResetTokensByUserId(user.id);
+
+    const token = generatePasswordResetToken();
+    await this.authRepository.createPasswordResetToken({
+      userId: user.id,
+      tokenHash: token.hash,
+      expiresAt: token.expiresAt,
+    });
+
+    await sendPasswordResetEmail({
+      to: user.email,
+      name: user.name,
+      resetUrl: buildPasswordResetUrl(token.raw),
+    });
+  }
+
+  async resetPassword(input: { token: string; password: string }) {
+    const tokenHash = hashPasswordResetToken(input.token);
+    const stored =
+      await this.authRepository.findPasswordResetTokenByHash(tokenHash);
+
+    if (!stored) {
+      throw invalidResetToken();
+    }
+
+    // An expired link is dropped on sight rather than left to accumulate.
+    if (stored.expiresAt.getTime() <= Date.now()) {
+      await this.authRepository.deletePasswordResetTokenByHash(tokenHash);
+      throw invalidResetToken();
+    }
+
+    const user = await this.authRepository.findUserById(stored.userId);
+    if (!user) {
+      await this.authRepository.deletePasswordResetTokenByHash(tokenHash);
+      throw invalidResetToken();
+    }
+
+    const password = await bcrypt.hash(input.password, 10);
+    await this.authRepository.updateUserPassword(user.id, password);
+
+    // Burn the link and end every existing session: whoever prompted the reset
+    // should be the only one left able to use the account.
+    await this.authRepository.deletePasswordResetTokenByHash(tokenHash);
+    await this.authRepository.deleteSessionsByUserId(user.id);
   }
 }

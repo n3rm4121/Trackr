@@ -1,5 +1,8 @@
 import type { AuthRepository } from "../../auth.repository.js";
-import { hashRefreshToken } from "../../../../utils/token.js";
+import {
+  hashPasswordResetToken,
+  hashRefreshToken,
+} from "../../../../utils/token.js";
 
 type UserRow = {
   id: number;
@@ -15,6 +18,13 @@ type SessionRow = {
   expiresAt: Date;
 };
 
+type PasswordResetTokenRow = {
+  id: number;
+  userId: number;
+  tokenHash: string;
+  expiresAt: Date;
+};
+
 /**
  * In-memory stand-in for AuthRepository. Keeps the real contract, including
  * returning a single user rather than an array, so service logic is exercised
@@ -23,6 +33,7 @@ type SessionRow = {
 export class FakeAuthRepository {
   users: UserRow[] = [];
   sessions: SessionRow[] = [];
+  passwordResetTokens: PasswordResetTokenRow[] = [];
   private nextUserId = 1;
 
   async findUserByEmail(email: string) {
@@ -40,6 +51,14 @@ export class FakeAuthRepository {
   }) {
     const user: UserRow = { id: this.nextUserId++, ...userData };
     this.users.push(user);
+    return user;
+  }
+
+  async updateUserPassword(userId: number, password: string) {
+    const user = this.users.find((candidate) => candidate.id === userId);
+    if (user) {
+      user.password = password;
+    }
     return user;
   }
 
@@ -63,6 +82,50 @@ export class FakeAuthRepository {
     );
   }
 
+  async deleteSessionsByUserId(userId: number) {
+    this.sessions = this.sessions.filter(
+      (session) => session.userId !== userId,
+    );
+  }
+
+  async createPasswordResetToken(token: {
+    userId: number;
+    tokenHash: string;
+    expiresAt: Date;
+  }) {
+    const row: PasswordResetTokenRow = {
+      id: this.passwordResetTokens.length + 1,
+      ...token,
+    };
+    this.passwordResetTokens.push(row);
+    return row;
+  }
+
+  async findPasswordResetTokenByHash(tokenHash: string) {
+    return this.passwordResetTokens.find(
+      (token) => token.tokenHash === tokenHash,
+    );
+  }
+
+  async deletePasswordResetTokenByHash(tokenHash: string) {
+    this.passwordResetTokens = this.passwordResetTokens.filter(
+      (token) => token.tokenHash !== tokenHash,
+    );
+  }
+
+  async deletePasswordResetTokensByUserId(userId: number) {
+    this.passwordResetTokens = this.passwordResetTokens.filter(
+      (token) => token.userId !== userId,
+    );
+  }
+
+  async deleteExpiredPasswordResetTokens() {
+    const now = Date.now();
+    this.passwordResetTokens = this.passwordResetTokens.filter(
+      (token) => token.expiresAt.getTime() > now,
+    );
+  }
+
   sessionCount() {
     return this.sessions.length;
   }
@@ -71,6 +134,13 @@ export class FakeAuthRepository {
   findByRawToken(raw: string) {
     return this.sessions.find(
       (session) => session.tokenHash === hashRefreshToken(raw),
+    );
+  }
+
+  /** Mirrors the real lookup for a reset link's raw token. */
+  findPasswordResetByRawToken(raw: string) {
+    return this.passwordResetTokens.find(
+      (token) => token.tokenHash === hashPasswordResetToken(raw),
     );
   }
 }

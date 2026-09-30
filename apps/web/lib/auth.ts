@@ -6,9 +6,13 @@ import {
 } from "@tanstack/react-query";
 import {
   authResponseSchema,
+  passwordActionResponseSchema,
   type AuthResponse,
+  type ForgotPasswordInput,
   type LoginInput,
+  type PasswordActionResponse,
   type RegisterInput,
+  type ResetPasswordInput,
 } from "@job-kanban/shared";
 import { apiClient, toApiError } from "./api";
 
@@ -20,6 +24,18 @@ async function postAuth(path: string, body?: unknown): Promise<AuthResponse> {
   try {
     const { data } = await apiClient.post(path, body);
     return authResponseSchema.parse(data);
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+async function postPasswordAction(
+  path: string,
+  body: unknown,
+): Promise<PasswordActionResponse> {
+  try {
+    const { data } = await apiClient.post(path, body);
+    return passwordActionResponseSchema.parse(data);
   } catch (error) {
     throw toApiError(error);
   }
@@ -60,10 +76,7 @@ export function useLogin() {
   });
 }
 
-/**
- * /auth/register creates the account but opens no session, so signup is
- * followed by a login to land the user on the dashboard already signed in.
- */
+// register and login the users
 export function useRegister() {
   const queryClient = useQueryClient();
 
@@ -91,6 +104,30 @@ export function useLogout() {
       } finally {
         queryClient.removeQueries({ queryKey: authKeys.currentUser });
       }
+    },
+  });
+}
+
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (input: ForgotPasswordInput) =>
+      postPasswordAction("/auth/forgot-password", input),
+  });
+}
+
+/**
+ * The server ends every session for the user as part of the reset, so the
+ * cached user is dropped too. Otherwise someone resetting a password from a
+ * shared browser would keep seeing a signed-in dashboard until a refetch.
+ */
+export function useResetPassword() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ResetPasswordInput) =>
+      postPasswordAction("/auth/reset-password", input),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: authKeys.currentUser });
     },
   });
 }

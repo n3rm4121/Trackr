@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useRegister } from "@/lib/auth";
 import { ApiError, type FieldErrors } from "@/lib/api";
 
-export const Route = createFileRoute("/signup")({
+export const Route = createFileRoute("/_auth/signup")({
   component: SignupPage,
 });
 
@@ -20,7 +20,7 @@ function SignupPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setFieldErrors({});
     setFormError(undefined);
@@ -45,7 +45,10 @@ function SignupPage() {
       footer={
         <>
           Already have an account?{" "}
-          <Link to="/login" className="text-primary underline underline-offset-4">
+          <Link
+            to="/login"
+            className="text-primary underline underline-offset-4"
+          >
             Log in
           </Link>
         </>

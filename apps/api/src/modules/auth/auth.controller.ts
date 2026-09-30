@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
-import { registerInputSchema, loginInputSchema } from "@job-kanban/shared";
+import {
+  registerInputSchema,
+  loginInputSchema,
+  forgotPasswordInputSchema,
+  resetPasswordInputSchema,
+} from "@job-kanban/shared";
 import { AuthService } from "./auth.service.js";
 import { AuthRepository } from "./auth.repository.js";
 import { parseBody } from "../../utils/validation.js";
@@ -40,8 +45,6 @@ export class AuthController {
     const tokens = await this.authService.login(input);
     sendAuthCookies(res, tokens);
 
-    // Only the user is in the body. Tokens live in httpOnly cookies that
-    // JavaScript cannot read.
     res.json({ user: tokens.user });
   };
 
@@ -82,5 +85,30 @@ export class AuthController {
     }
     clearAuthCookies(res);
     res.status(204).send();
+  };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    const input = parseBody(forgotPasswordInputSchema, req, res);
+    if (!input) {
+      return;
+    }
+
+    await this.authService.requestPasswordReset(input);
+
+    // The same response whether or not the address is registered.
+    res.json({
+      message:
+        "If an account exists for that email, a reset link is on its way",
+    });
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    const input = parseBody(resetPasswordInputSchema, req, res);
+    if (!input) {
+      return;
+    }
+
+    await this.authService.resetPassword(input);
+    res.json({ message: "Your password has been reset. You can log in now" });
   };
 }

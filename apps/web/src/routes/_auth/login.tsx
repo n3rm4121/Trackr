@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useLogin } from "@/lib/auth";
 import { ApiError, type FieldErrors } from "@/lib/api";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/_auth/login")({
   component: LoginPage,
 });
 
@@ -19,7 +19,7 @@ function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setFieldErrors({});
     setFormError(undefined);
@@ -44,7 +44,10 @@ function LoginPage() {
       footer={
         <>
           New here?{" "}
-          <Link to="/signup" className="text-primary underline underline-offset-4">
+          <Link
+            to="/signup"
+            className="text-primary underline underline-offset-4"
+          >
             Create an account
           </Link>
         </>
@@ -69,6 +72,14 @@ function LoginPage() {
           onChange={setPassword}
           error={fieldErrors.password}
         />
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            Forgot your password?
+          </Link>
+        </div>
         <AuthError message={formError} />
         <Button type="submit" disabled={login.isPending}>
           {login.isPending ? "Logging in…" : "Log in"}

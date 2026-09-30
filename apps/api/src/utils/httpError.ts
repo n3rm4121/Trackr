@@ -21,3 +21,10 @@ export const emailAlreadyRegistered = () =>
 
 export const invalidRefreshToken = () =>
   new HttpError(401, "Invalid or expired refresh token", "INVALID_REFRESH_TOKEN");
+
+export const invalidResetToken = () =>
+  new HttpError(
+    400,
+    "This reset link is invalid or has expired",
+    "INVALID_RESET_TOKEN",
+  );

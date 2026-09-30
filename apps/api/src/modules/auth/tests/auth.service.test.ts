@@ -1,14 +1,32 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import bcrypt from "bcrypt";
 import { AuthService } from "../auth.service.js";
-import { verifyAccessToken, hashRefreshToken } from "../../../utils/token.js";
+import {
+  verifyAccessToken,
+  hashPasswordResetToken,
+  hashRefreshToken,
+} from "../../../utils/token.js";
+import { sendPasswordResetEmail } from "../../../utils/mailer.js";
 import { FakeAuthRepository, asRepository } from "./helpers/fakeRepository.js";
+
+// Only the delivery is faked. The URL builder stays real, because the shape of
+// the emailed link is part of what these tests are checking.
+vi.mock("../../../utils/mailer.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../utils/mailer.js")>()),
+  sendPasswordResetEmail: vi.fn(),
+}));
 
 const CREDENTIALS = {
   email: "user@example.com",
   password: "correct-horse",
   name: "Test User",
 };
+
+/** Pulls the raw token back out of the link that was emailed. */
+function emailedResetToken(): string {
+  const [args] = vi.mocked(sendPasswordResetEmail).mock.calls.at(-1)!;
+  return new URL(args.resetUrl).searchParams.get("token")!;
+}
 
 /**
  * These exercise AuthService against an in-memory repository, so the real
@@ -260,6 +278,155 @@ describe("AuthService", () => {
       );
 
       expect(valid).toBe(true);
+    });
+  });
+
+  describe("requestPasswordReset", () => {
+    beforeEach(async () => {
+      vi.mocked(sendPasswordResetEmail).mockClear();
+      await registerUser();
+    });
+
+    it("emails a link that points at the reset route with the token attached", async () => {
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+
+      const [args] = vi.mocked(sendPasswordResetEmail).mock.calls[0]!;
+      const url = new URL(args.resetUrl);
+
+      expect(url.pathname).toBe("/reset-password");
+      expect(url.searchParams.get("token")).toBeTruthy();
+      expect(args.to).toBe(CREDENTIALS.email);
+    });
+
+    it("persists only the hash of the token, never the raw value", async () => {
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+
+      const stored = repo.passwordResetTokens[0]!;
+      expect(stored.tokenHash).toMatch(/^[a-f0-9]{64}$/);
+      expect(repo.passwordResetTokens.some((t) => t.tokenHash === emailedResetToken())).toBe(
+        false,
+      );
+    });
+
+    it("gives the token an expiry", async () => {
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+
+      const stored = repo.passwordResetTokens[0]!;
+      expect(stored.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    });
+
+    /**
+     * Sending mail only for known addresses would turn this endpoint into a way
+     * to find out which emails are registered, so an unknown address has to
+     * look exactly like a known one from the outside.
+     */
+    it("does nothing and does not throw for an unknown email", async () => {
+      await expect(
+        service.requestPasswordReset({ email: "nobody@example.com" }),
+      ).resolves.toBeUndefined();
+
+      expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+      expect(repo.passwordResetTokens).toHaveLength(0);
+    });
+
+    it("retires the previous link so only the newest one works", async () => {
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+      const stale = emailedResetToken();
+
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+
+      expect(repo.passwordResetTokens).toHaveLength(1);
+      await expect(
+        service.resetPassword({ token: stale, password: "new-password-1" }),
+      ).rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
+    });
+  });
+
+  describe("resetPassword", () => {
+    const NEW_PASSWORD = "brand-new-password";
+
+    beforeEach(async () => {
+      vi.mocked(sendPasswordResetEmail).mockClear();
+      await registerUser();
+      await service.requestPasswordReset({ email: CREDENTIALS.email });
+    });
+
+    it("lets the user log in with the new password and not the old one", async () => {
+      const token = emailedResetToken();
+
+      await service.resetPassword({ token, password: NEW_PASSWORD });
+
+      await expect(
+        service.login({ email: CREDENTIALS.email, password: NEW_PASSWORD }),
+      ).resolves.toBeDefined();
+      await expect(
+        service.login({ email: CREDENTIALS.email, password: CREDENTIALS.password }),
+      ).rejects.toMatchObject({ status: 401 });
+    });
+
+    it("stores the new password hashed, not in the clear", async () => {
+      const token = emailedResetToken();
+
+      await service.resetPassword({ token, password: NEW_PASSWORD });
+
+      const stored = repo.users[0]!.password;
+      expect(stored).not.toBe(NEW_PASSWORD);
+      await expect(bcrypt.compare(NEW_PASSWORD, stored)).resolves.toBe(true);
+    });
+
+    it("burns the link after one use", async () => {
+      const token = emailedResetToken();
+
+      await service.resetPassword({ token, password: NEW_PASSWORD });
+
+      expect(repo.passwordResetTokens).toHaveLength(0);
+      await expect(
+        service.resetPassword({ token, password: "another-password" }),
+      ).rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
+    });
+
+    /**
+     * Someone who prompted the reset may still be signed in elsewhere, and
+     * whoever prompted it should not be left holding a live session.
+     */
+    it("ends every existing session for that user", async () => {
+      const token = emailedResetToken();
+      const login = await service.login(CREDENTIALS);
+      expect(repo.sessionCount()).toBe(1);
+
+      await service.resetPassword({ token, password: NEW_PASSWORD });
+
+      expect(repo.sessionCount()).toBe(0);
+      await expect(service.refresh(login.refreshToken)).rejects.toMatchObject({
+        status: 401,
+      });
+    });
+
+    it("rejects a token that was never issued", async () => {
+      await expect(
+        service.resetPassword({ token: "made-up", password: NEW_PASSWORD }),
+      ).rejects.toMatchObject({
+        status: 400,
+        code: "INVALID_RESET_TOKEN",
+      });
+    });
+
+    it("rejects an expired token and deletes it", async () => {
+      const user = repo.users[0]!;
+      repo.passwordResetTokens = [
+        {
+          id: 1,
+          userId: user.id,
+          tokenHash: hashPasswordResetToken("expired"),
+          expiresAt: new Date(Date.now() - 1000),
+        },
+      ];
+
+      await expect(
+        service.resetPassword({ token: "expired", password: NEW_PASSWORD }),
+      ).rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
+
+      expect(repo.passwordResetTokens).toHaveLength(0);
     });
   });
 });

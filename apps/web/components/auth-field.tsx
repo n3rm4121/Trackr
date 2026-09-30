@@ -47,14 +47,17 @@ export function AuthField({
   );
 }
 
-/** For failures that belong to the form rather than a single field. */
+// For failures that belong to the form rather than a single field.
 export function AuthError({ message }: { message?: string }) {
   if (!message) {
     return null;
   }
 
   return (
-    <p role="alert" className="bg-destructive/10 text-destructive rounded-4xl px-3 py-2 text-sm">
+    <p
+      role="alert"
+      className="bg-destructive/10 text-destructive rounded-4xl px-3 py-2 text-sm"
+    >
       {message}
     </p>
   );
