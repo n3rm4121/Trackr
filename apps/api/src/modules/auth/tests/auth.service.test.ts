@@ -46,12 +46,13 @@ describe("AuthService", () => {
       expect(user).not.toHaveProperty("password");
     });
 
-    it("rejects a duplicate email", async () => {
+    it("rejects a duplicate email with a 409 the client can read", async () => {
       await registerUser();
 
-      await expect(registerUser()).rejects.toThrow(
-        "Email already registered",
-      );
+      await expect(registerUser()).rejects.toMatchObject({
+        status: 409,
+        message: "Email already registered",
+      });
     });
   });
 

@@ -39,7 +39,7 @@ export function parseBody<S extends ZodType>(
     validationErrorSchema.parse({
       message: "Validation failed",
       code: "VALIDATION_ERROR",
-      errors: toValidationIssues(result.error),
+      issues: toValidationIssues(result.error),
     }),
   );
 

@@ -5,7 +5,11 @@ import {
   hashRefreshToken,
 } from "../../utils/token.js";
 import bcrypt from "bcrypt";
-import { badCredentials, invalidRefreshToken } from "../../utils/httpError.js";
+import {
+  badCredentials,
+  emailAlreadyRegistered,
+  invalidRefreshToken,
+} from "../../utils/httpError.js";
 
 function publicUser(user: { id: number; email: string; name: string }) {
   return { id: user.id, email: user.email, name: user.name };
@@ -17,7 +21,7 @@ export class AuthService {
   async register(input: { email: string; password: string; name: string }) {
     const existing = await this.authRepository.findUserByEmail(input.email);
     if (existing) {
-      throw new Error("Email already registered");
+      throw emailAlreadyRegistered();
     }
 
     const password = await bcrypt.hash(input.password, 10);
