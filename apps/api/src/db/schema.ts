@@ -28,7 +28,3 @@ export const sessionsTable = pgTable(
   },
   (table) => [index("sessions_token_hash_idx").on(table.tokenHash)],
 );
-
-export type Session = typeof sessionsTable.$inferSelect;
-export type NewSession = typeof sessionsTable.$inferInsert;
-export type User = typeof usersTable.$inferSelect;
