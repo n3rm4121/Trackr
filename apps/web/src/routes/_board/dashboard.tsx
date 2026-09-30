@@ -174,6 +174,7 @@ function Dashboard() {
         onSearchChange={setSearch}
         search={search}
         onOpenStats={() => void navigate({ to: "/stats" })}
+        stats={stats}
       />
 
       {status === "loading" ? (

@@ -38,6 +38,8 @@ export function BoardColumn({
     accept: ["card"],
   });
 
+  const isOffer = status === "offer";
+
   return (
     <section
       ref={ref}
@@ -51,6 +53,8 @@ export function BoardColumn({
         // pointer, so at most one column ever reads as a target.
         highlighted &&
           "border-primary/70 bg-primary/10 border-dashed shadow-[inset_0_0_0_1px_var(--primary)]",
+        // Highlight the Offer column with a subtle accent ring
+        isOffer && "ring-2 ring-emerald-500/30 bg-emerald-500/5 border-emerald-500/20",
       )}
     >
       {showHeader ? (

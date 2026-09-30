@@ -8,77 +8,79 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Office Supply Minimalism palette */
+  --background: #FAFAF9;        /* Paper - warm off-white */
+  --foreground: #1A1A2E;        /* Ink - deep blue-black */
+  --card: #FAFAF9;              /* Paper */
+  --card-foreground: #1A1A2E;   /* Ink */
+  --popover: #FAFAF9;
+  --popover-foreground: #1A1A2E;
+  --primary: #1A1A2E;           /* Ink */
+  --primary-foreground: #FAFAF9; /* Paper */
+  --secondary: #E8D5B7;         /* Manila folder */
+  --secondary-foreground: #1A1A2E;
+  --muted: #F5F5F0;             /* Lighter paper */
+  --muted-foreground: #5A5A6E;  /* Faded ink */
+  --accent: #F5E62B;            /* Highlighter yellow - SIGNATURE */
+  --accent-foreground: #1A1A2E;
+  --destructive: #C1121F;       /* Red pen */
+  --border: #E0DCC8;            /* Manila border */
+  --input: #E0DCC8;
+  --ring: #F5E62B;              /* Highlighter focus ring */
+  --chart-1: #1E3A8A;           /* Blue ink */
+  --chart-2: #F5E62B;           /* Highlighter */
+  --chart-3: #C1121F;           /* Red pen */
+  --chart-4: #5A5A6E;           /* Faded ink */
+  --chart-5: #E8D5B7;           /* Manila */
+  --radius: 0.5rem;             /* Slightly sharper - paper corners */
+  --sidebar: #FAFAF9;
+  --sidebar-foreground: #1A1A2E;
+  --sidebar-primary: #1A1A2E;
+  --sidebar-primary-foreground: #FAFAF9;
+  --sidebar-accent: #E8D5B7;
+  --sidebar-accent-foreground: #1A1A2E;
+  --sidebar-border: #E0DCC8;
+  --sidebar-ring: #F5E62B;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #1A1A2E;        /* Deep ink */
+  --foreground: #FAFAF9;        /* Paper */
+  --card: #1A1A2E;
+  --card-foreground: #FAFAF9;
+  --popover: #1A1A2E;
+  --popover-foreground: #FAFAF9;
+  --primary: #F5E62B;           /* Highlighter on dark */
+  --primary-foreground: #1A1A2E;
+  --secondary: #2D2D44;         /* Dark manila */
+  --secondary-foreground: #FAFAF9;
+  --muted: #2D2D44;
+  --muted-foreground: #9A9AA8;
+  --accent: #F5E62B;
+  --accent-foreground: #1A1A2E;
+  --destructive: #E57373;
+  --border: #2D2D44;
+  --input: #2D2D44;
+  --ring: #F5E62B;
+  --chart-1: #F5E62B;
+  --chart-2: #1E3A8A;
+  --chart-3: #E57373;
+  --chart-4: #9A9AA8;
+  --chart-5: #2D2D44;
+  --sidebar: #1A1A2E;
+  --sidebar-foreground: #FAFAF9;
+  --sidebar-primary: #F5E62B;
+  --sidebar-primary-foreground: #1A1A2E;
+  --sidebar-accent: #2D2D44;
+  --sidebar-accent-foreground: #FAFAF9;
+  --sidebar-border: #2D2D44;
+  --sidebar-ring: #F5E62B;
 }
 
 @theme inline {
-  --font-sans: 'Inter Variable', sans-serif;
-  --font-heading: var(--font-sans);
+  --font-sans: 'Outfit Variable', sans-serif;
+  --font-heading: 'Raleway Variable', sans-serif;
+  --font-mono: 'Inter Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -110,13 +112,13 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-3xl: calc(var(--radius) * 2.5);
+  --radius-4xl: calc(var(--radius) * 3);
 }
 
 @layer base {
@@ -124,13 +126,35 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
   }
   html {
     @apply font-sans;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Highlighter accent utility */
+@layer utilities {
+  .bg-highlighter {
+    background-color: #F5E62B;
+  }
+  .text-highlighter {
+    color: #F5E62B;
+  }
+  .border-highlighter {
+    border-color: #F5E62B;
+  }
+  .ring-highlighter {
+    --tw-ring-color: #F5E62B;
   }
 }

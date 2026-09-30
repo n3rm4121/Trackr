@@ -26,28 +26,13 @@ function sendAuthCookies(
 export class AuthController {
   private authService = new AuthService(new AuthRepository());
 
-  register = async (
-    req: Request,
-    res: Response,
-    onUserCreated?: (userId: number) => Promise<unknown>,
-  ) => {
+  register = async (req: Request, res: Response) => {
     const input = parseBody(registerInputSchema, req, res);
     if (!input) {
       return;
     }
 
     const user = await this.authService.register(input);
-
-    // Seeding is a convenience, not part of making an account: if it fails the
-    // account still exists and still works, so a broken sample board cannot
-    // stop someone signing up.
-    if (onUserCreated) {
-      try {
-        await onUserCreated(user.id);
-      } catch (error) {
-        console.error("Failed to seed the sample board", error);
-      }
-    }
 
     res.status(201).json({ user });
   };

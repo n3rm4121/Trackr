@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Alert02Icon, Task01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
+import { IconAdd } from "@/components/icons";
 
 export function EmptyBoard({ onAdd }: { onAdd: () => void }) {
   return (
@@ -12,13 +13,14 @@ export function EmptyBoard({ onAdd }: { onAdd: () => void }) {
         <HugeiconsIcon icon={Task01Icon} className="size-8" />
       </div>
       <div className="grid gap-1">
-        <h2 className="text-lg font-semibold">No applications yet</h2>
+        <h2 className="text-lg font-semibold text-foreground">No applications yet</h2>
         <p className="text-muted-foreground mx-auto max-w-sm text-sm">
           Add the first role you have applied for and it will show up in the
           Applied column. You can drag it across as things progress.
         </p>
       </div>
-      <Button type="button" onClick={onAdd}>
+      <Button type="button" onClick={onAdd} className="bg-accent text-accent-foreground hover:brightness-95 active:brightness-105">
+        <IconAdd className="size-4 mr-2" aria-hidden />
         Add your first application
       </Button>
     </div>
@@ -45,7 +47,7 @@ export function BoardError({
         <HugeiconsIcon icon={Alert02Icon} className="size-8" />
       </div>
       <div className="grid gap-1">
-        <h2 className="text-lg font-semibold">Could not load your board</h2>
+        <h2 className="text-lg font-semibold text-foreground">Could not load your board</h2>
         <p className="text-muted-foreground mx-auto max-w-sm text-sm">
           {message}
         </p>

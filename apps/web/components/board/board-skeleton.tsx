@@ -20,7 +20,10 @@ export function BoardSkeleton() {
           <section
             key={status}
             aria-label={STATUS_META[status].title}
-            className="bg-muted/40 flex min-h-0 flex-col rounded-xl p-3"
+            className={cn(
+              "bg-muted/40 flex min-h-0 flex-col rounded-xl p-3",
+              status === "offer" && "ring-2 ring-emerald-500/30 bg-emerald-500/5 border-emerald-500/20",
+            )}
           >
             <div className="mb-2 flex items-center gap-2">
               <span className={cn("size-2 rounded-full opacity-40", STATUS_META[status].dot)} />

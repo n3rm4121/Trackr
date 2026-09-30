@@ -13,7 +13,6 @@ export const Route = createFileRoute("/_auth/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const login = useLogin();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});

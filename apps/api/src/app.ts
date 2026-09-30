@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler.js";
 import applicationRouter from "./modules/applications/application.route.js";
 import config from "./config/config.js";
+import { authRouter } from "./modules/auth/auth.route.js";
 
 const app: Express = express();
 
@@ -27,6 +28,7 @@ app.get("/health", (req, res) => {
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+app.use("/auth", authRouter);
 
 app.use("/applications", applicationRouter);
 

@@ -20,14 +20,14 @@ export function StatStrip({
   const chips: Chip[] = [
     {
       id: "total",
-      label: "Total applications",
+      label: "Total",
       value: total,
       icon: IconBriefcase,
       tone: "text-foreground",
     },
     {
       id: "interviews",
-      label: "Active interviews",
+      label: "Interviews",
       value: activeInterviews,
       icon: IconClock,
       tone: "text-amber-600 dark:text-amber-400",

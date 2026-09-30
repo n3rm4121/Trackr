@@ -69,7 +69,7 @@ export function ApplicationDetails({
       <div className="grid gap-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="truncate text-lg font-semibold">
+            <p className="truncate text-lg font-semibold text-foreground">
               {application.company}
             </p>
             <p className="text-muted-foreground truncate text-sm">
@@ -156,7 +156,7 @@ export function ApplicationDetails({
                   href={application.jobUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="hover:underline"
+                  className="hover:underline text-accent"
                 >
                   {application.jobUrl.replace(/^https?:\/\//, "")}
                 </a>
@@ -176,7 +176,7 @@ export function ApplicationDetails({
       />
 
       <div className="border-t pt-4">
-        <Button type="button" variant="destructive" onClick={onDelete}>
+        <Button type="button" variant="destructive" onClick={onDelete} className="w-full">
           <IconTrash className="size-4" aria-hidden />
           Delete application
         </Button>

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CancelCircleIcon } from "@hugeicons/core-free-icons";
@@ -11,27 +13,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  IconAdd,
-  IconChartBar,
-  IconKanban,
-  IconMoon,
-  IconSearch,
-  IconSun,
-} from "@/components/icons";
+import { IconAdd, IconChartBar, IconMoon, IconSearch, IconSun } from "@/components/icons";
 import { initials } from "@/lib/date";
 import { useTheme } from "@/lib/use-theme";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
+import { StatStrip } from "./stat-strip";
 
 /**
  * The board's top bar.
  *
- * On a desktop it is one row with everything inline. On a phone it becomes a
- * compact bar — logo, search icon, avatar — because the width does not hold a
- * search field and two buttons, and a field that is always there would push the
- * board below the fold. Search opens a row of its own, and the account actions
- * move into the avatar menu. Adding a card is the board's floating button on
- * mobile, so the Add button is dropped from the bar there.
+ * On desktop: search field, Add button, Stats button, theme toggle, stats chips (total/interviews/offers).
+ * On mobile: search icon, avatar dropdown (account actions), theme toggle in dropdown.
+ * The avatar dropdown is only shown on mobile.
  */
 export function BoardToolbar({
   userName,
@@ -40,6 +33,7 @@ export function BoardToolbar({
   onAdd,
   onLogout,
   onOpenStats,
+  stats,
 }: {
   userName?: string;
   search: string;
@@ -47,6 +41,7 @@ export function BoardToolbar({
   onAdd: () => void;
   onLogout: () => void;
   onOpenStats: () => void;
+  stats: { total: number; activeInterviews: number; offers: number };
 }) {
   const { theme, toggle } = useTheme();
   const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
@@ -66,8 +61,8 @@ export function BoardToolbar({
         type="search"
         value={search}
         autoFocus={autoFocus}
-        placeholder="Search"
-        className="h-9 pl-8"
+        placeholder="Search…"
+        className="h-9 pl-8 bg-background border-border"
         onChange={(event) => onSearchChange(event.target.value)}
       />
       {search ? (
@@ -84,29 +79,31 @@ export function BoardToolbar({
   );
 
   return (
-    <header className="shrink-0 border-b">
+    <header className="shrink-0 bg-background/95 backdrop-blur-sm">
       <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
-        <h1 className="mr-auto flex min-w-0 items-center gap-2 truncate text-sm font-semibold">
-          <IconKanban className="text-primary size-4 shrink-0" aria-hidden />
-          Job Kanban
-          {userName ? (
-            <span className="text-muted-foreground hidden font-normal sm:inline">
-              {userName}
-            </span>
-          ) : null}
-        </h1>
+        <div className="mr-auto flex min-w-0 items-center gap-2 truncate text-sm font-semibold">
+          {desktop ? (
+            <StatStrip
+              total={stats.total}
+              activeInterviews={stats.activeInterviews}
+              offers={stats.offers}
+            />
+          ) : (
+            userName ? (
+              <span className="text-muted-foreground hidden font-normal sm:inline">
+                {userName}
+              </span>
+            ) : null
+          )}
+        </div>
 
-        {/* One search control, not two: rendering the desktop field on a phone
-            as well would leave a second, hidden control on the page. */}
-        {desktop ? <div className="w-52">{field("board-search", false)}</div> : null}
+        {desktop ? <div className="w-56">{field("board-search", false)}</div> : null}
 
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
           className="sm:hidden"
-          /* Distinct from the field's own label, so a screen reader meets one
-             "Search applications" control rather than two with the same name. */
           aria-label={searchOpen ? "Close search" : "Open search"}
           aria-expanded={searchOpen}
           onClick={() => setSearchOpen((open) => !open)}
@@ -114,17 +111,12 @@ export function BoardToolbar({
           <IconSearch className="size-4" aria-hidden />
         </Button>
 
-        <Button
-          type="button"
-          size="sm"
-          className="hidden sm:inline-flex"
-          onClick={onAdd}
-        >
+        <Button type="button" size="sm" className="hidden sm:inline-flex bg-accent text-accent-foreground hover:brightness-95 active:brightness-105" onClick={onAdd}>
           <IconAdd className="size-4" aria-hidden />
           Add
         </Button>
 
-        <Button type="button" size="sm" variant="outline" onClick={onOpenStats}>
+        <Button type="button" size="sm" variant="outline" onClick={onOpenStats} className="hidden md:inline-flex">
           <IconChartBar className="size-4" aria-hidden />
           Stats
         </Button>
@@ -144,52 +136,80 @@ export function BoardToolbar({
           )}
         </Button>
 
-        {/* The phone has no room for a sign-out button, so the account sits
-            behind the avatar. */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label="Account menu"
-                className="rounded-full outline-offset-2"
-              />
-            }
-          >
-            <Avatar className="size-7">
-              <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-semibold">
-                {initials(userName ?? "?")}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <p className="truncate px-2 py-1.5 text-sm font-medium">{userName}</p>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={toggle} className="sm:hidden">
-              {theme === "dark" ? (
-                <IconSun className="size-4" aria-hidden />
-              ) : (
-                <IconMoon className="size-4" aria-hidden />
-              )}
-              {theme === "dark" ? "Light mode" : "Dark mode"}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onAdd} className="sm:hidden">
-              <IconAdd className="size-4" aria-hidden />
-              Add application
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onOpenStats}>
-              <IconChartBar className="size-4" aria-hidden />
-              Stats
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onLogout} className="font-medium">
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {!desktop && userName && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="rounded-full outline-offset-2"
+                />
+              }
+            >
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                  {initials(userName ?? "?")}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <p className="truncate px-2 py-1.5 text-sm font-medium">{userName}</p>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={toggle}>
+                {theme === "dark" ? (
+                  <IconSun className="size-4" aria-hidden />
+                ) : (
+                  <IconMoon className="size-4" aria-hidden />
+                )}
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onAdd}>
+                <IconAdd className="size-4" aria-hidden />
+                Add application
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onOpenStats}>
+                <IconChartBar className="size-4" aria-hidden />
+                Stats
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onLogout} className="font-medium text-destructive">
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {desktop && userName && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="rounded-full outline-offset-2"
+                />
+              }
+            >
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                  {initials(userName ?? "?")}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <p className="truncate px-2 py-1.5 text-sm font-medium">{userName}</p>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onLogout} className="font-medium text-destructive">
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        )}
+
       </div>
 
       {searchOpen && !desktop ? (
-        <div className="px-3 pb-2">{field("board-search-mobile", true)}</div>
+        <div className="px-3 pb-2 border-t bg-background/50">{field("board-search-mobile", true)}</div>
       ) : null}
     </header>
   );

@@ -52,6 +52,7 @@ export function NotesTimeline({
           size="sm"
           onClick={handleAdd}
           disabled={!body.trim()}
+          className="bg-accent text-accent-foreground hover:brightness-95 active:brightness-105"
         >
           Add note
         </Button>

@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   IconArrowRight,
-  IconChartBar,
   IconClock,
   IconKanban,
 } from "@/components/icons";
@@ -16,7 +15,7 @@ import {
   type WeekBucket,
 } from "@/lib/analytics";
 import { initials } from "@/lib/date";
-import { useCurrentUser, useLogout } from "@/lib/auth";
+import { useLogout } from "@/lib/auth";
 import { useTheme } from "@/lib/use-theme";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons";
@@ -28,7 +27,6 @@ export const Route = createFileRoute("/_board/stats")({
 function Stats() {
   const navigate = useNavigate();
   const logout = useLogout();
-  const { data } = useCurrentUser();
   const { theme, toggle } = useTheme();
   const { board, status } = useBoard();
   const insights = boardInsights(board);
@@ -45,17 +43,7 @@ function Stats() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2 sm:px-4">
-        <h1 className="mr-auto flex items-center gap-2 text-sm font-semibold">
-          <IconChartBar className="text-primary size-4" aria-hidden />
-          Stats
-          {data?.user.name ? (
-            <span className="text-muted-foreground hidden font-normal sm:inline">
-              {data.user.name}
-            </span>
-          ) : null}
-        </h1>
-
+      <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2 sm:px-4 bg-background/95 backdrop-blur-sm">
         <Button
           type="button"
           size="sm"
@@ -113,7 +101,7 @@ function Stats() {
                     className="bg-card rounded-lg border px-3 py-2.5"
                   >
                     <p className="text-muted-foreground text-xs">{kpi.label}</p>
-                    <p className="text-2xl font-semibold tabular-nums">
+                    <p className="text-2xl font-semibold tabular-nums text-foreground">
                       {kpi.value}
                     </p>
                     <p className="text-muted-foreground truncate text-[11px]">
@@ -178,7 +166,7 @@ function Stats() {
                         className="hover:bg-muted/60 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors"
                       >
                         <Avatar className="size-8 shrink-0">
-                          <AvatarFallback className="bg-muted text-muted-foreground text-[11px] font-semibold">
+                          <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
                             {initials(application.company)}
                           </AvatarFallback>
                         </Avatar>
@@ -239,7 +227,7 @@ function WeeklyChart({ weeks }: { weeks: WeekBucket[] }) {
             {week.count > 0 ? week.count : ""}
           </span>
           <div
-            className="bg-primary/70 w-full rounded-t"
+            className="bg-accent w-full rounded-t"
             style={{ height: `${Math.max(4, (week.count / busiest) * 100)}%` }}
             role="img"
             aria-label={`${week.count} applied in the week of ${week.label}`}

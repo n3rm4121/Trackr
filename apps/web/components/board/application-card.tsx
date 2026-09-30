@@ -72,6 +72,9 @@ export function ApplicationCard({
   });
 
   const silent = daysSince(application.lastActivityAt) >= SILENCE_DAYS;
+  const isOffer = application.status === "offer";
+  const isRejected = application.status === "rejected";
+  const isInterview = application.status === "interview";
 
   return (
     <article
@@ -101,8 +104,28 @@ export function ApplicationCard({
         // fades out, so the column never collapses under the pointer.
         isDragSource && "opacity-40",
         isDropTarget && "border-primary/60 ring-primary/20 ring-2",
+        // Offer cards get a subtle emerald ring
+        isOffer && "ring-2 ring-emerald-500/40",
+        // Rejected cards are dimmed
+        isRejected && "opacity-60",
+        // Interview cards get a subtle amber accent
+        isInterview && "border-amber-500/30",
+        // Silent cards get a warning border
+        silent && "border-amber-500/50",
       )}
     >
+      {/* Status indicator bar at top */}
+      <div
+        className={cn(
+          "absolute top-0 left-0 right-0 h-1 rounded-t-lg",
+          isOffer && "bg-emerald-500",
+          isInterview && "bg-amber-500",
+          isRejected && "bg-rose-500",
+          application.status === "applied" && "bg-sky-500",
+        )}
+        aria-hidden="true"
+      />
+
       <div className="flex items-start gap-2">
         <Avatar className={cn("shrink-0", coarse ? "size-9" : "size-7")}>
           <AvatarFallback

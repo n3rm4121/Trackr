@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import {
+  DragDropProvider,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+} from "@dnd-kit/react";
 import {
   STATUSES,
   type Application,
@@ -15,7 +20,6 @@ import {
 import { ApplicationCard } from "./application-card";
 import { BoardColumn } from "./board-column";
 import { MobileBoard } from "./mobile-board";
-import { StatStrip } from "./stat-strip";
 
 // The card shown under the cursor while dragging. A separate render, because
 // dnd-kit has already taken the original element out of the flow.
@@ -120,7 +124,7 @@ export function Board({
   // A drag was rolled back, so the caller can explain it and offer a retry.
   onRevert?: (retry: { id: string; status: Status }) => void;
 }) {
-  const { visibleColumns, board, stats, dragStart, dragOver, dragEnd } =
+  const { visibleColumns, board, dragStart, dragOver, dragEnd } =
     useBoard();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Status>("applied");
@@ -158,8 +162,13 @@ export function Board({
     </BoardColumn>
   );
 
+  // Configure sensors for drag and drop - pointer for mouse/touch, keyboard for accessibility
+  // In dnd-kit v0.5, pass sensor constructors directly in the sensors array
+  const sensors = [PointerSensor, KeyboardSensor];
+
   return (
     <DragDropProvider
+      sensors={sensors}
       onDragStart={(event) => {
         setActiveId(String(event.operation.source?.id ?? ""));
         dragStart(event);
@@ -176,16 +185,6 @@ export function Board({
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-3">
-        {/* The tab strip carries the counts on mobile, so the strip would only
-            repeat them. */}
-        {desktop ? (
-          <StatStrip
-            total={stats.total}
-            activeInterviews={stats.activeInterviews}
-            offers={stats.offers}
-          />
-        ) : null}
-
         {desktop ? (
           <div
             data-testid="board"
