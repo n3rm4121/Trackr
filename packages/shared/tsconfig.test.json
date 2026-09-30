@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  // The base config excludes test files from the published build. `exclude` is
+  // inherited by `extends`, so it has to be cleared here or this config would
+  // typecheck nothing.
+  "exclude": []
+}

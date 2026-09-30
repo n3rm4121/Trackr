@@ -45,7 +45,7 @@ describe("AuthController", () => {
   });
 
   describe("register", () => {
-    it("should return 400 if required fields are missing", async () => {
+    it("should return 400 with per-field issues if required fields are missing", async () => {
       mockReq = {
         body: { email: "test@example.com" }, // missing password and name
       };
@@ -54,9 +54,62 @@ describe("AuthController", () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: "email, password and name are required",
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        issues: [
+          {
+            field: "password",
+            message: "Invalid input: expected string, received undefined",
+          },
+          {
+            field: "name",
+            message: "Invalid input: expected string, received undefined",
+          },
+        ],
       });
       expect(serviceInstance.register).not.toHaveBeenCalled();
+    });
+
+    it("should reject a malformed email with the shared schema's message", async () => {
+      mockReq = {
+        body: { email: "not-an-email", password: "password123", name: "Test" },
+      };
+
+      await controller.register(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        issues: [
+          { field: "email", message: "Enter a valid email address" },
+        ],
+      });
+      expect(serviceInstance.register).not.toHaveBeenCalled();
+    });
+
+    it("should normalise the email before it reaches the service", async () => {
+      vi.mocked(serviceInstance.register).mockResolvedValueOnce({
+        id: 1,
+        email: "test@example.com",
+        name: "Test",
+      } as any);
+
+      mockReq = {
+        body: {
+          email: "  Test@Example.COM ",
+          password: "password123",
+          name: "Test",
+        },
+      };
+
+      await controller.register(mockReq as Request, mockRes as Response);
+
+      expect(serviceInstance.register).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+        name: "Test",
+      });
     });
 
     it("should register user and return 201 with user data", async () => {
@@ -86,7 +139,7 @@ describe("AuthController", () => {
   });
 
   describe("login", () => {
-    it("should return 400 if email or password are missing", async () => {
+    it("should return 400 with per-field issues if email or password are missing", async () => {
       mockReq = {
         body: { email: "test@example.com" }, // missing password
       };
@@ -95,7 +148,14 @@ describe("AuthController", () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: "email and password are required",
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        issues: [
+          {
+            field: "password",
+            message: "Invalid input: expected string, received undefined",
+          },
+        ],
       });
     });
 

@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
+import { registerInputSchema, loginInputSchema } from "@job-kanban/shared";
 import { AuthService } from "./auth.service.js";
 import { AuthRepository } from "./auth.repository.js";
+import { parseBody } from "../../utils/validation.js";
 import {
   setAccessCookie,
   setRefreshCookie,
@@ -20,35 +22,22 @@ export class AuthController {
   private authService = new AuthService(new AuthRepository());
 
   register = async (req: Request, res: Response) => {
-    const { email, password, name } = req.body as {
-      email?: string;
-      password?: string;
-      name?: string;
-    };
-
-    if (!email || !password || !name) {
-      res
-        .status(400)
-        .json({ message: "email, password and name are required" });
+    const input = parseBody(registerInputSchema, req, res);
+    if (!input) {
       return;
     }
 
-    const user = await this.authService.register({ email, password, name });
+    const user = await this.authService.register(input);
     res.status(201).json({ user });
   };
 
   login = async (req: Request, res: Response) => {
-    const { email, password } = req.body as {
-      email?: string;
-      password?: string;
-    };
-
-    if (!email || !password) {
-      res.status(400).json({ message: "email and password are required" });
+    const input = parseBody(loginInputSchema, req, res);
+    if (!input) {
       return;
     }
 
-    const tokens = await this.authService.login({ email, password });
+    const tokens = await this.authService.login(input);
     sendAuthCookies(res, tokens);
 
     // Only the user is in the body. Tokens live in httpOnly cookies that
