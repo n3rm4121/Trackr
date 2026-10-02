@@ -9,7 +9,7 @@ import {
   noteResponseSchema,
   reorderApplicationsInputSchema,
   updateApplicationInputSchema,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 
 import { ApplicationService } from "./application.service.js";
 import { ApplicationRepository } from "./application.repository.js";
@@ -44,7 +44,10 @@ export class ApplicationController {
       return;
     }
 
-    const application = await this.applicationService.create(req.user!.id, input);
+    const application = await this.applicationService.create(
+      req.user!.id,
+      input,
+    );
     res.status(201).json(applicationResponseSchema.parse({ application }));
   };
 
@@ -90,7 +93,10 @@ export class ApplicationController {
       return;
     }
 
-    const applications = await this.applicationService.reorder(req.user!.id, input);
+    const applications = await this.applicationService.reorder(
+      req.user!.id,
+      input,
+    );
     res.json(applicationsResponseSchema.parse({ applications }));
   };
 

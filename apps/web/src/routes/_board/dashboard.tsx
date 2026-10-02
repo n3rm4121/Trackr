@@ -22,9 +22,14 @@ import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
 
 export const Route = createFileRoute("/_board/dashboard")({
   // ?open=<id> opens a card's details on arrival, which is how the stats page
-  // sends someone to a specific application.
-  validateSearch: (search: Record<string, unknown>) => ({
-    open: typeof search.open === "string" ? search.open : undefined,
+  // sends someone to a specific application. The key is declared optional
+  // rather than as `string | undefined`: the router reads a key it must be
+  // handed as a required search param, which would make every Link and
+  // navigate to this route carry `search: { open: undefined }` forever.
+  validateSearch: (
+    search?: Record<string, unknown>,
+  ): { open?: string } => ({
+    open: typeof search?.open === "string" ? search.open : undefined,
   }),
   component: Dashboard,
 });

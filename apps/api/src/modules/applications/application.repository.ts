@@ -1,9 +1,6 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
-import {
-  APPLICATION_STATUSES,
-  type ApplicationStatus,
-} from "@job-kanban/shared";
+import { APPLICATION_STATUSES, type ApplicationStatus } from "@trackr/shared";
 import { applicationsTable, notesTable } from "../../db/schema.js";
 import { db } from "../../db/index.js";
 

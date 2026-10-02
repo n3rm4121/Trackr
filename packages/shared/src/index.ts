@@ -1,5 +1,5 @@
 /**
- * Single entry point for @job-kanban/shared.
+ * Single entry point for @trackr/shared.
  *
  * Every contract is a Zod schema; the TypeScript types beside it are inferred
  * with z.infer, so the two can never drift. Consumers get the schema for

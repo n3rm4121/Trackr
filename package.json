@@ -1,5 +1,5 @@
 {
-  "name": "job-kanban",
+  "name": "trackr",
   "version": "1.0.0",
   "private": true,
   "description": "",
@@ -8,10 +8,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:api": "pnpm --filter api test",
-    "dev": "pnpm --filter @job-kanban/shared build && pnpm --parallel --filter @job-kanban/shared --filter web --filter api run dev",
+    "dev": "pnpm --filter @trackr/shared build && pnpm --parallel --filter @trackr/shared --filter web --filter api run dev",
     "build": "pnpm -r build",
-    "dev:web": "pnpm --filter @job-kanban/shared build && pnpm --filter web dev",
-    "dev:api": "pnpm --filter @job-kanban/shared build && pnpm --filter api dev"
+    "dev:web": "pnpm --filter @trackr/shared build && pnpm --filter web dev",
+    "dev:api": "pnpm --filter @trackr/shared build && pnpm --filter api dev"
   },
   "keywords": [],
   "author": "",

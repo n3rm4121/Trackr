@@ -33,8 +33,9 @@ export function useMediaQuery(query: string): boolean {
 /** The breakpoint where the board switches from tabs to the four-column grid. */
 export const DESKTOP_BOARD_QUERY = "(min-width: 768px)";
 
-/** True on devices whose primary input cannot hover, where the drag handle has
- *  to be visible up front and the long press takes over from the mouse. */
+/** True on devices whose primary input cannot hover, where the card grows its
+ *  tap targets, a tap anywhere opens it, and a long press takes over from the
+ *  mouse's short drag. */
 export function useCoarsePointer(): boolean {
   return useMediaQuery("(pointer: coarse)");
 }

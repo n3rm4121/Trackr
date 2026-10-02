@@ -2,11 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  IconArrowRight,
-  IconClock,
-  IconKanban,
-} from "@/components/icons";
+import { IconArrowRight, IconClock, IconKanban } from "@/components/icons";
 import { useBoard } from "@/lib/use-board";
 import { STATUS_META } from "@/lib/applications";
 import {
@@ -15,7 +11,6 @@ import {
   type WeekBucket,
 } from "@/lib/analytics";
 import { initials } from "@/lib/date";
-import { useLogout } from "@/lib/auth";
 import { useTheme } from "@/lib/use-theme";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons";
@@ -26,15 +21,9 @@ export const Route = createFileRoute("/_board/stats")({
 
 function Stats() {
   const navigate = useNavigate();
-  const logout = useLogout();
   const { theme, toggle } = useTheme();
   const { board, status } = useBoard();
   const insights = boardInsights(board);
-
-  async function handleLogout() {
-    await logout.mutateAsync();
-    await navigate({ to: "/" });
-  }
 
   // Opens the card on the board, so the list is a way into the work rather than a report about it.
   function openCard(id: string) {
@@ -43,7 +32,7 @@ function Stats() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center gap-2 border-b px-3 py-2 sm:px-4 bg-background/95 backdrop-blur-sm">
+      <header className="flex shrink-0 items-center justify-end gap-2 border-b px-3 py-2 sm:px-4 bg-background/95 backdrop-blur-sm">
         <Button
           type="button"
           size="sm"
@@ -70,15 +59,6 @@ function Stats() {
           ) : (
             <HugeiconsIcon icon={Moon01Icon} className="size-4" aria-hidden />
           )}
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-        >
-          Log out
         </Button>
       </header>
 

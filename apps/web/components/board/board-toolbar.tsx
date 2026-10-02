@@ -13,7 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconAdd, IconChartBar, IconMoon, IconSearch, IconSun } from "@/components/icons";
+import {
+  IconAdd,
+  IconChartBar,
+  IconMoon,
+  IconSearch,
+  IconSun,
+} from "@/components/icons";
 import { initials } from "@/lib/date";
 import { useTheme } from "@/lib/use-theme";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
@@ -72,7 +78,11 @@ export function BoardToolbar({
           onClick={() => onSearchChange("")}
           className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1"
         >
-          <HugeiconsIcon icon={CancelCircleIcon} className="size-4" aria-hidden />
+          <HugeiconsIcon
+            icon={CancelCircleIcon}
+            className="size-4"
+            aria-hidden
+          />
         </button>
       ) : null}
     </div>
@@ -88,16 +98,16 @@ export function BoardToolbar({
               activeInterviews={stats.activeInterviews}
               offers={stats.offers}
             />
-          ) : (
-            userName ? (
-              <span className="text-muted-foreground hidden font-normal sm:inline">
-                {userName}
-              </span>
-            ) : null
-          )}
+          ) : userName ? (
+            <span className="text-muted-foreground hidden font-normal sm:inline">
+              {userName}
+            </span>
+          ) : null}
         </div>
 
-        {desktop ? <div className="w-56">{field("board-search", false)}</div> : null}
+        {desktop ? (
+          <div className="w-56">{field("board-search", false)}</div>
+        ) : null}
 
         <Button
           type="button"
@@ -111,12 +121,23 @@ export function BoardToolbar({
           <IconSearch className="size-4" aria-hidden />
         </Button>
 
-        <Button type="button" size="sm" className="hidden sm:inline-flex bg-accent text-accent-foreground hover:brightness-95 active:brightness-105" onClick={onAdd}>
+        <Button
+          type="button"
+          size="sm"
+          className="hidden sm:inline-flex bg-accent text-accent-foreground hover:brightness-95 active:brightness-105"
+          onClick={onAdd}
+        >
           <IconAdd className="size-4" aria-hidden />
           Add
         </Button>
 
-        <Button type="button" size="sm" variant="outline" onClick={onOpenStats} className="hidden md:inline-flex">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={onOpenStats}
+          className="hidden md:inline-flex"
+        >
           <IconChartBar className="size-4" aria-hidden />
           Stats
         </Button>
@@ -127,7 +148,9 @@ export function BoardToolbar({
           size="icon-sm"
           className={desktop ? "" : "hidden"}
           onClick={toggle}
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          }
         >
           {theme === "dark" ? (
             <IconSun className="size-4" aria-hidden />
@@ -154,7 +177,9 @@ export function BoardToolbar({
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <p className="truncate px-2 py-1.5 text-sm font-medium">{userName}</p>
+              <p className="truncate px-2 py-1.5 text-sm font-medium">
+                {userName}
+              </p>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={toggle}>
                 {theme === "dark" ? (
@@ -172,14 +197,17 @@ export function BoardToolbar({
                 <IconChartBar className="size-4" aria-hidden />
                 Stats
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onLogout} className="font-medium text-destructive">
+              <DropdownMenuItem
+                onClick={onLogout}
+                className="font-medium text-destructive"
+              >
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
 
-        {desktop && userName && (
+        {/* {desktop && userName && (
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -204,12 +232,13 @@ export function BoardToolbar({
               </DropdownMenuItem>
             </DropdownMenuContent>
             </DropdownMenu>
-        )}
-
+        )} */}
       </div>
 
       {searchOpen && !desktop ? (
-        <div className="px-3 pb-2 border-t bg-background/50">{field("board-search-mobile", true)}</div>
+        <div className="px-3 pb-2 border-t bg-background/50">
+          {field("board-search-mobile", true)}
+        </div>
       ) : null}
     </header>
   );

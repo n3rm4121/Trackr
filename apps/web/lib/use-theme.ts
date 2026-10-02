@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { config } from "./config";
 
-const STORAGE_KEY = "job-kanban-theme";
+const STORAGE_KEY = config.themeStorageKey;
 
 export type Theme = "light" | "dark";
 

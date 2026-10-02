@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from "@job-kanban/shared";
+import type { ApplicationStatus } from "@trackr/shared";
 
 function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 86_400_000);

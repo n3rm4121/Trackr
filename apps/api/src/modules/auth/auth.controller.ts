@@ -4,7 +4,7 @@ import {
   loginInputSchema,
   forgotPasswordInputSchema,
   resetPasswordInputSchema,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 import { AuthService } from "./auth.service.js";
 import { AuthRepository } from "./auth.repository.js";
 import { parseBody } from "../../utils/validation.js";

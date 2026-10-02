@@ -4,14 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Job Kanban</title>
+    <title>%VITE_SITE_NAME%</title>
     <script>
       // Runs before first paint so a dark-mode user never sees a white flash.
       // Kept inline and tiny on purpose; the React hook in lib/use-theme.ts
-      // takes over once mounted.
+      // takes over once mounted. The storage key is config.themeStorageKey,
+      // which an inline script cannot import, so the two go in step.
       (function () {
         try {
-          var stored = localStorage.getItem("job-kanban-theme");
+          var stored = localStorage.getItem("trackr-theme");
           var dark =
             stored === "dark" ||
             (stored !== "light" &&

@@ -5,7 +5,7 @@ import {
   createApplicationInputSchema,
   reorderApplicationsInputSchema,
   type ApplicationStatus,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 
 import { ApplicationService } from "../application.service.js";
 import {
@@ -56,8 +56,16 @@ describe("list", () => {
   });
 
   it("returns notes newest first", async () => {
-    const older = { id: 1, body: "first", createdAt: new Date("2026-01-01T00:00:00.000Z") };
-    const newer = { id: 2, body: "second", createdAt: new Date("2026-02-01T00:00:00.000Z") };
+    const older = {
+      id: 1,
+      body: "first",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    };
+    const newer = {
+      id: 2,
+      body: "second",
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+    };
     fake.given(owner, { status: "applied", notes: [newer, older] });
 
     const [application] = await service.list(owner);
@@ -136,7 +144,9 @@ describe("update", () => {
       salary: "€95k",
     });
 
-    const updated = await service.update(owner, card.id, { company: "Stripe Inc" });
+    const updated = await service.update(owner, card.id, {
+      company: "Stripe Inc",
+    });
 
     expect(updated.company).toBe("Stripe Inc");
     expect(updated.jobUrl).toBe("https://stripe.com/jobs");
@@ -161,9 +171,9 @@ describe("update", () => {
       service.update(owner, card.id, { company: "Hijacked" }),
     ).rejects.toMatchObject({ status: 404 });
 
-    expect(
-      fake.all().find((row) => row.id === card.id)?.company,
-    ).toBe("Notion");
+    expect(fake.all().find((row) => row.id === card.id)?.company).toBe(
+      "Notion",
+    );
   });
 });
 
@@ -310,8 +320,16 @@ describe("notes", () => {
     const card = fake.given(owner, {
       status: "applied",
       notes: [
-        { id: 5, body: "keep", createdAt: new Date("2026-02-01T00:00:00.000Z") },
-        { id: 6, body: "drop", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+        {
+          id: 5,
+          body: "keep",
+          createdAt: new Date("2026-02-01T00:00:00.000Z"),
+        },
+        {
+          id: 6,
+          body: "drop",
+          createdAt: new Date("2026-01-01T00:00:00.000Z"),
+        },
       ],
     });
 
@@ -323,9 +341,11 @@ describe("notes", () => {
   it("answers 404 when the note is not there", async () => {
     const card = fake.given(owner, { status: "applied" });
 
-    await expect(service.removeNote(owner, card.id, 404)).rejects.toMatchObject({
-      status: 404,
-      code: "NOTE_NOT_FOUND",
-    });
+    await expect(service.removeNote(owner, card.id, 404)).rejects.toMatchObject(
+      {
+        status: 404,
+        code: "NOTE_NOT_FOUND",
+      },
+    );
   });
 });

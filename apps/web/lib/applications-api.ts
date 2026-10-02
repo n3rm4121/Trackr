@@ -14,7 +14,7 @@ import {
   type Note as ApiNote,
   type ReorderApplicationsInput,
   type UpdateApplicationInput,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 
 import { apiClient, toApiError } from "./api";
 import {

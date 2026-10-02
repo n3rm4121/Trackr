@@ -5,7 +5,7 @@
  * detail drawer, the mobile sheet and the stats page all read from here, so a
  * field is added in one place rather than four.
  *
- * The shape and the field rules come from @job-kanban/shared, which is the same
+ * The shape and the field rules come from @trackr/shared, which is the same
  * declaration the API validates against — a field renamed there fails the
  * shared schema tests rather than this board quietly going stale.
  *
@@ -19,7 +19,7 @@ import {
   type Application as ApiApplication,
   type ApplicationStatus,
   type Note as ApiNote,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 
 export const STATUSES = APPLICATION_STATUSES;
 

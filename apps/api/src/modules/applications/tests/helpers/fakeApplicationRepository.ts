@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from "@job-kanban/shared";
+import type { ApplicationStatus } from "@trackr/shared";
 
 import type {
   ApplicationPatch,

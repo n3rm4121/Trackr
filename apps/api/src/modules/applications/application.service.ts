@@ -5,7 +5,7 @@ import {
   type CreateApplicationInput,
   type ReorderApplicationsInput,
   type UpdateApplicationInput,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 
 import {
   ApplicationRepository,

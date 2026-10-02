@@ -4,7 +4,8 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { currentUserQuery } from "@/lib/auth";
+import { currentUserQuery, useLogout } from "@/lib/auth";
+import { config } from "@/lib/config";
 
 export function PaperclipIcon({
   className = "w-5 h-5",
@@ -34,6 +35,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { data: userData } = useQuery(currentUserQuery());
   const userName = userData?.user?.name;
+  const logout = useLogout();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -64,10 +66,10 @@ export function Navbar() {
           <Link
             to="/"
             className="flex items-center gap-2 font-heading font-semibold text-lg text-foreground hover:opacity-80 transition-opacity"
-            aria-label="Job Kanban - Home"
+            aria-label={`${config.site.name} - Home`}
           >
             <PaperclipIcon className="w-6 h-6 text-accent" />
-            <span className="hidden sm:block">Job Kanban</span>
+            <span className="hidden sm:block">{config.site.name}</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
@@ -93,11 +95,21 @@ export function Navbar() {
 
           <div className="flex items-center gap-3">
             {userName ? (
-              <a href="/dashboard">
+              <>
+              <Link to="/dashboard">
                 <Button size="sm" className="text-sm font-medium bg-accent text-accent-foreground hover:brightness-95 active:brightness-105">
                   Dashboard
                 </Button>
-              </a>
+              </Link>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-sm font-medium"
+                onClick={() => logout.mutate()}
+              >
+                Log out
+              </Button>
+            </>
             ) : (
               <>
                 <Link to="/login">

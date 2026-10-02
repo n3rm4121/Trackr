@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-import { APPLICATION_STATUSES, type ApplicationStatus } from "@job-kanban/shared";
+import { APPLICATION_STATUSES, type ApplicationStatus } from "@trackr/shared";
 
 export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -74,7 +74,7 @@ export const applicationsTable = pgTable(
     position: integer().notNull().default(0),
     appliedAt: timestamp({ withTimezone: true }).notNull(),
     /** Bumped on any move or note, and it is what the "no response" badge
-   *  reads, so it is deliberately not the same as updatedAt. */
+     *  reads, so it is deliberately not the same as updatedAt. */
     lastActivityAt: timestamp({ withTimezone: true }).notNull(),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -118,4 +118,3 @@ export const notesTable = pgTable(
     ),
   ],
 );
-

@@ -1,12 +1,13 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { apiErrorSchema, validationErrorSchema } from "@job-kanban/shared";
+import { apiErrorSchema, validationErrorSchema } from "@trackr/shared";
+import { config } from "./config";
 
 /**
  * The API hands out httpOnly cookies, so every request must carry credentials
  * and the API must allow this origin (CORS_ORIGINS in apps/api/.env).
  */
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
+  baseURL: config.apiUrl,
   withCredentials: true,
 });
 

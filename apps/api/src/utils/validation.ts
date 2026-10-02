@@ -1,10 +1,7 @@
 import type { Request, Response } from "express";
 import type { ZodError, ZodType, output } from "zod";
 
-import {
-  validationErrorSchema,
-  type ValidationIssue,
-} from "@job-kanban/shared";
+import { validationErrorSchema, type ValidationIssue } from "@trackr/shared";
 
 // turns validation failure into http response
 

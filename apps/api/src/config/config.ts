@@ -81,7 +81,7 @@ const smtp: SmtpConfig = {
   port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
   user: process.env.SMTP_USER,
   password: process.env.SMTP_PASSWORD,
-  from: process.env.SMTP_FROM ?? "Job Kanban <no-reply@jobkanban.local>",
+  from: process.env.SMTP_FROM ?? "Trackr <no-reply@trackr.local>",
 };
 
 // Outside production the mailer prints links instead of sending them, so SMTP

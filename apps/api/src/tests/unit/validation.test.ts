@@ -55,7 +55,7 @@ describe("parseBody", () => {
   });
 
   it("answers 400 with the shared validation error shape", async () => {
-    const { validationErrorSchema } = await import("@job-kanban/shared");
+    const { validationErrorSchema } = await import("@trackr/shared");
     const res = makeRes();
     const req = { body: { email: "nope", count: 1.5 } } as Request;
 

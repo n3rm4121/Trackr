@@ -361,30 +361,38 @@ export function BoardProvider({
     committedBeforeDrag.current = source;
   }, [board]);
 
-  const dragOver = useCallback((event: DragOverEvent) => {
-    // dnd-kit mutates optimistically while dragging; move() is what keeps the
-    // React state in step so a card can cross into an empty column.
-    setOptimistic((current) => {
-      const source =
-        current?.board ?? committedBeforeDrag.current ?? emptyBoard();
-      const columns = move(source.columns, event);
-      const id = String(event.operation.source?.id ?? "");
-      const status = STATUSES.find((key) => columns[key].includes(id));
-      if (id && status) {
-        attempted.current = { id, status };
-      }
-      return {
-        base: current?.base ?? null,
-        board: {
-          columns,
-          // A card's own status has to follow it across columns, or the
-          // detail panel and the sortable group would still describe the old
-          // column.
-          applications: syncStatuses(source.applications, columns),
-        },
-      };
-    });
-  }, []);
+  const dragOver = useCallback(
+    (event: DragOverEvent) => {
+      // dnd-kit mutates optimistically while dragging; move() is what keeps the
+      // React state in step so a card can cross into an empty column.
+      setOptimistic((current) => {
+        // Rebased on the server board whenever this layer no longer sits on it,
+        // which is what a refetch landing mid-drag does. Each dragOver builds on
+        // the previous one only while the two share a base.
+        const source =
+          current?.base === serverBoard
+            ? current.board
+            : (serverBoard ?? emptyBoard());
+        const columns = move(source.columns, event);
+        const id = String(event.operation.source?.id ?? "");
+        const status = STATUSES.find((key) => columns[key].includes(id));
+        if (id && status) {
+          attempted.current = { id, status };
+        }
+        return {
+          base: serverBoard,
+          board: {
+            columns,
+            // A card's own status has to follow it across columns, or the
+            // detail panel and the sortable group would still describe the old
+            // column.
+            applications: syncStatuses(source.applications, columns),
+          },
+        };
+      });
+    },
+    [serverBoard],
+  );
 
   const dragEnd = useCallback(
     (event: DragEndEvent): DragOutcome => {
@@ -396,7 +404,7 @@ export function BoardProvider({
       if (event.canceled) {
         const before = committedBeforeDrag.current;
         committedBeforeDrag.current = null;
-        setOptimistic(before ? { base: null, board: before } : null);
+        setOptimistic(before ? { base: serverBoard, board: before } : null);
         return { reverted: true, retry };
       }
 
@@ -420,7 +428,7 @@ export function BoardProvider({
           // The drop did not stick. Put the board back exactly as it was and
           // say so, with the move to retry — a card that silently snaps back
           // looks like a bug.
-          setOptimistic({ base: null, board: before });
+          setOptimistic({ base: serverBoard, board: before });
           setNotice({
             tone: "error",
             message: "Couldn't move card. Reverted.",
@@ -431,7 +439,7 @@ export function BoardProvider({
 
       return { reverted: false, retry: null };
     },
-    [board, reorderMutation],
+    [board, reorderMutation, serverBoard],
   );
 
   const clearNotice = useCallback(() => setNotice(null), []);

@@ -1,8 +1,7 @@
-import { useRef } from "react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { cn } from "cn";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Drag01Icon, NoteIcon } from "@hugeicons/core-free-icons";
+import { NoteIcon } from "@hugeicons/core-free-icons";
 import {
   IconClock,
   IconDollar,
@@ -43,7 +42,7 @@ export function ApplicationCard({
   application: Application;
   index: number;
   dragging: boolean;
-  // True where the primary input is touch: the whole card becomes the drag handle for a long press, and the tap targets grow to 44px.
+  // True where the primary input is touch: a tap anywhere on the card opens details and the tap targets grow to 44px.
   coarse?: boolean;
   onOpen: () => void;
   onEdit: () => void;
@@ -52,23 +51,16 @@ export function ApplicationCard({
   // On touch the three-dot opens the action sheet instead of a dropdown menu, which a thumb cannot reach.
   onRequestActions?: () => void;
 }) {
-  // The grip element, held in a ref of our own so it can be handed to dnd-kit
-  // as a handle. dnd-kit reads it when the sensor binds on pointerdown, so the
-  // ref is already pointing at the rendered button by then.
-  const handle = useRef<HTMLButtonElement | null>(null);
   const { ref, isDragSource, isDropTarget } = useSortable({
     id: application.id,
     index,
     group: application.status,
     type: "card",
     accept: ["card", "column"],
-    // On touch, dnd-kit's default pointer sensor waits 250ms before it lifts a
-    // card, so passing no handle makes the whole card long-press draggable and
-    // leaves swipes to the rail. On a mouse the handle keeps text selection and
-    // the card's own buttons usable, and dragging straight from the grip starts
-    // immediately, because the sensor skips its activation delay for a press
-    // that lands on the handle itself.
-    handle: coarse ? undefined : handle,
+    // No handle, so the whole card is drag surface: a mouse lifts it after a
+    // few pixels of movement, touch after a long press. Buttons inside the
+    // card keep their own clicks, because dnd-kit refuses to activate a drag
+    // that starts on an interactive element.
   });
 
   const silent = daysSince(application.lastActivityAt) >= SILENCE_DAYS;
@@ -87,7 +79,7 @@ export function ApplicationCard({
         // A touch tap anywhere on the card opens details, so the whole card is
         // a target rather than just the title. Its own buttons are skipped:
         // they have their own actions, and dnd-kit treats them as interactive
-        // for the same reason.
+        // for the same reason, so a press on one never becomes a drag.
         if (!coarse || event.defaultPrevented) {
           return;
         }
@@ -97,8 +89,12 @@ export function ApplicationCard({
         onOpen();
       }}
       className={cn(
-        "bg-card group relative rounded-lg border p-3 transition-shadow",
+        "bg-card relative rounded-lg border p-3 transition-shadow",
         "hover:border-foreground/25 hover:shadow-sm",
+        // The whole card is drag surface, so it says so with a grab cursor, and
+        // text selection is off so a highlight cannot race the drag. The cursor
+        // tightens once the card is off the board.
+        "cursor-grab select-none data-[dragging]:cursor-grabbing",
         coarse && "p-4",
         // While the card is in the air the original slot keeps its height but
         // fades out, so the column never collapses under the pointer.
@@ -167,21 +163,6 @@ export function ApplicationCard({
         </button>
 
         <div className="flex shrink-0 items-center">
-          {/* Only the handle starts a drag on a pointer device, so text
-              selection and the menu keep working on the rest of the card. On
-              touch there is no hover to reveal it and the whole card is the
-              handle, so it is not rendered at all. */}
-          {coarse ? null : (
-            <button
-              ref={handle}
-              type="button"
-              aria-label={`Drag ${application.company}`}
-              className="text-muted-foreground hover:text-foreground cursor-grab touch-none rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing"
-            >
-              <HugeiconsIcon icon={Drag01Icon} className="size-4" aria-hidden />
-            </button>
-          )}
-
           {onRequestActions ? (
             <button
               type="button"

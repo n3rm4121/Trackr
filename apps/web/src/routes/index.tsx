@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DemoBoard } from "@/components/demo-board";
 import { PaperclipIcon } from "@/components/navbar";
+import { config } from "@/lib/config";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -83,7 +84,7 @@ function Index() {
                     />
                   </div>
                   <span className="text-sm font-medium text-muted-foreground font-mono">
-                    job-kanban.local
+                    trackr.local
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
@@ -166,7 +167,7 @@ function Index() {
               className="flex items-center gap-2 font-heading font-semibold text-lg text-foreground hover:opacity-80 transition-opacity"
             >
               <PaperclipIcon className="w-6 h-6 text-accent" />
-              <span>Job Kanban</span>
+              <span>{config.site.name}</span>
             </Link>
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <Link

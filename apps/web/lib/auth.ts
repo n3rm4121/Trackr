@@ -13,7 +13,7 @@ import {
   type PasswordActionResponse,
   type RegisterInput,
   type ResetPasswordInput,
-} from "@job-kanban/shared";
+} from "@trackr/shared";
 import { apiClient, toApiError } from "./api";
 
 export const authKeys = {
