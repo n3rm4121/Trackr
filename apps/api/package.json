@@ -9,7 +9,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "pnpm --filter @trackr/shared build && tsc",
     "start": "node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
