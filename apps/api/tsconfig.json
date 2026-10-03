@@ -7,7 +7,8 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "node16",
+    "moduleResolution": "node16",
     "target": "esnext",
     "types": ["node"],
     // For nodejs:
@@ -35,12 +36,13 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "src/**/*.test.ts"],
-  "exclude": ["**/*.test.ts"]
+  // Test infrastructure ships no runtime code: keep it out of dist so the
+  // deployed bundle contains only the server.
+  "exclude": ["**/*.test.ts", "src/__tests__/**/*.ts", "src/**/tests/**/*.ts"]
 }
