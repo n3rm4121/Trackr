@@ -17,9 +17,9 @@ importers:
       '@trackr/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      bcrypt:
-        specifier: ^6.0.0
-        version: 6.0.0
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -48,9 +48,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@types/bcrypt':
-        specifier: ^6.0.0
-        version: 6.0.0
+      '@types/bcryptjs':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -78,6 +78,9 @@ importers:
       drizzle-kit:
         specifier: 1.0.0-rc.4
         version: 1.0.0-rc.4
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       supertest:
         specifier: ^7.3.0
         version: 7.3.1
@@ -1596,8 +1599,9 @@ packages:
   '@ts-morph/common@0.27.0':
     resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
 
-  '@types/bcrypt@6.0.0':
-    resolution: {integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==}
+  '@types/bcryptjs@3.0.0':
+    resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
+    deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
@@ -1868,9 +1872,9 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  bcrypt@6.0.0:
-    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
-    engines: {node: '>= 18'}
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
+    hasBin: true
 
   blake3-wasm@2.1.5:
     resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
@@ -3141,14 +3145,6 @@ packages:
     peerDependencies:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
-
-  node-addon-api@8.9.2:
-    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
-    engines: {node: ^18 || ^20 || >= 21}
-
-  node-gyp-build@4.8.4:
-    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
-    hasBin: true
 
   node-releases@2.0.57:
     resolution: {integrity: sha512-kQK9LGGFiHtrWiNhZtA7Qbw17AQz+dmsEKODRIVTXA9+e5MS/2gZEBhYJt13GrAz5/IOZKddH/0Z3TP/Zgo+yw==}
@@ -5094,9 +5090,9 @@ snapshots:
       minimatch: 10.2.6
       path-browserify: 1.0.1
 
-  '@types/bcrypt@6.0.0':
+  '@types/bcryptjs@3.0.0':
     dependencies:
-      '@types/node': 24.19.1
+      bcryptjs: 3.0.3
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -5394,10 +5390,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.27: {}
 
-  bcrypt@6.0.0:
-    dependencies:
-      node-addon-api: 8.9.2
-      node-gyp-build: 4.8.4
+  bcryptjs@3.0.3: {}
 
   blake3-wasm@2.1.5: {}
 
@@ -6489,10 +6482,6 @@ snapshots:
     dependencies:
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
-
-  node-addon-api@8.9.2: {}
-
-  node-gyp-build@4.8.4: {}
 
   node-releases@2.0.57: {}
 

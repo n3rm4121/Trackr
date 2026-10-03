@@ -6,7 +6,7 @@ import {
   hashPasswordResetToken,
   hashRefreshToken,
 } from "../../utils/token.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import {
   badCredentials,
   emailAlreadyRegistered,

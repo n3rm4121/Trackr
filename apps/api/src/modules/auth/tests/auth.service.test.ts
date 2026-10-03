@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { AuthService } from "../auth.service.js";
 import {
   verifyAccessToken,
