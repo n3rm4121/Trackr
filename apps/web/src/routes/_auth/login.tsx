@@ -37,53 +37,55 @@ function LoginPage() {
   }
 
   return (
-    <AuthCard
-      title="Welcome back"
-      description="Log in to keep your job applications in one place."
-      footer={
-        <>
-          New here?{" "}
-          <Link
-            to="/signup"
-            className="text-primary underline underline-offset-4"
-          >
-            Create an account
-          </Link>
-        </>
-      }
-    >
-      <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
-        <AuthField
-          label="Email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={setEmail}
-          error={fieldErrors.email}
-        />
-        <AuthField
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-          error={fieldErrors.password}
-        />
-        <div className="flex justify-end">
-          <Link
-            to="/forgot-password"
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            Forgot your password?
-          </Link>
-        </div>
-        <AuthError message={formError} />
-        <Button type="submit" disabled={login.isPending}>
-          {login.isPending ? "Logging in…" : "Log in"}
-        </Button>
-      </form>
-    </AuthCard>
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col justify-center">
+      <AuthCard
+        title="Welcome back"
+        description="Log in to keep your job applications in one place."
+        footer={
+          <>
+            <p>New here?</p>
+            <Link
+              to="/signup"
+              className="text-primary pl-2 underline underline-offset-4"
+            >
+              Create an account
+            </Link>
+          </>
+        }
+      >
+        <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+          <AuthField
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={setEmail}
+            error={fieldErrors.email}
+          />
+          <AuthField
+            label="Password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+            error={fieldErrors.password}
+          />
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+          <AuthError message={formError} />
+          <Button type="submit" disabled={login.isPending}>
+            {login.isPending ? "Logging in…" : "Log in"}
+          </Button>
+        </form>
+      </AuthCard>
+    </div>
   );
 }

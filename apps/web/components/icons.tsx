@@ -10,6 +10,7 @@ import {
   Clock01Icon,
   Delete02Icon,
   DollarCircleIcon,
+  Download01Icon,
   Drag01Icon,
   Edit01Icon,
   ExternalLinkIcon,
@@ -50,6 +51,7 @@ export const IconCheck = boardIcon(Tick02Icon);
 export const IconClock = boardIcon(Clock01Icon);
 export const IconDelete = boardIcon(Delete02Icon);
 export const IconDollar = boardIcon(DollarCircleIcon);
+export const IconDownload = boardIcon(Download01Icon);
 export const IconDrag = boardIcon(Drag01Icon);
 export const IconEdit = boardIcon(Edit01Icon);
 export const IconExternalLink = boardIcon(ExternalLinkIcon);

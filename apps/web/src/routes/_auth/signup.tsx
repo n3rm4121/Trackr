@@ -39,53 +39,55 @@ function SignupPage() {
   }
 
   return (
-    <AuthCard
-      title="Create your account"
-      description="Track every application from applied to offer."
-      footer={
-        <>
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-primary underline underline-offset-4"
-          >
-            Log in
-          </Link>
-        </>
-      }
-    >
-      <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
-        <AuthField
-          label="Name"
-          name="name"
-          autoComplete="name"
-          value={name}
-          onChange={setName}
-          error={fieldErrors.name}
-        />
-        <AuthField
-          label="Email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={setEmail}
-          error={fieldErrors.email}
-        />
-        <AuthField
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          value={password}
-          onChange={setPassword}
-          error={fieldErrors.password}
-        />
-        <AuthError message={formError} />
-        <Button type="submit" disabled={register.isPending}>
-          {register.isPending ? "Creating account…" : "Sign up"}
-        </Button>
-      </form>
-    </AuthCard>
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col justify-center">
+      <AuthCard
+        title="Create your account"
+        description="Track every application from applied to offer."
+        footer={
+          <>
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-primary underline underline-offset-4"
+            >
+              Log in
+            </Link>
+          </>
+        }
+      >
+        <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
+          <AuthField
+            label="Name"
+            name="name"
+            autoComplete="name"
+            value={name}
+            onChange={setName}
+            error={fieldErrors.name}
+          />
+          <AuthField
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={setEmail}
+            error={fieldErrors.email}
+          />
+          <AuthField
+            label="Password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={setPassword}
+            error={fieldErrors.password}
+          />
+          <AuthError message={formError} />
+          <Button type="submit" disabled={register.isPending}>
+            {register.isPending ? "Creating account…" : "Sign up"}
+          </Button>
+        </form>
+      </AuthCard>
+    </div>
   );
 }

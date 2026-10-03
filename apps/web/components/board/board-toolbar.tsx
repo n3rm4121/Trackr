@@ -16,6 +16,7 @@ import {
 import {
   IconAdd,
   IconChartBar,
+  IconDownload,
   IconMoon,
   IconSearch,
   IconSun,
@@ -28,7 +29,8 @@ import { StatStrip } from "./stat-strip";
 /**
  * The board's top bar.
  *
- * On desktop: search field, Add button, Stats button, theme toggle, stats chips (total/interviews/offers).
+ * On desktop: search field, Add button, Stats button, Export button, theme
+ * toggle, stats chips (total/interviews/offers).
  * On mobile: search icon, avatar dropdown (account actions), theme toggle in dropdown.
  * The avatar dropdown is only shown on mobile.
  */
@@ -39,6 +41,7 @@ export function BoardToolbar({
   onAdd,
   onLogout,
   onOpenStats,
+  onExport,
   stats,
 }: {
   userName?: string;
@@ -47,6 +50,7 @@ export function BoardToolbar({
   onAdd: () => void;
   onLogout: () => void;
   onOpenStats: () => void;
+  onExport: () => void;
   stats: { total: number; activeInterviews: number; offers: number };
 }) {
   const { theme, toggle } = useTheme();
@@ -142,6 +146,22 @@ export function BoardToolbar({
           Stats
         </Button>
 
+        {/* The bar is tight between md and lg, so the button is the icon alone
+            there and picks up its label once there is room for one. The
+            sr-only span keeps it named for a screen reader either way. */}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={onExport}
+          disabled={stats.total === 0}
+          className="hidden md:inline-flex"
+        >
+          <IconDownload className="size-4" aria-hidden />
+          <span className="hidden lg:inline">Export</span>
+          <span className="sr-only lg:hidden">Export CSV</span>
+        </Button>
+
         <Button
           type="button"
           variant="ghost"
@@ -196,6 +216,13 @@ export function BoardToolbar({
               <DropdownMenuItem onClick={onOpenStats}>
                 <IconChartBar className="size-4" aria-hidden />
                 Stats
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onExport}
+                disabled={stats.total === 0}
+              >
+                <IconDownload className="size-4" aria-hidden />
+                Export CSV
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onLogout}

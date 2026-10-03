@@ -22,7 +22,7 @@ export function AuthCard({
 }) {
   return (
     <div className="flex justify-center px-4 py-10 sm:py-16">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-md ">
         <CardHeader>
           {/* shadcn's CardTitle is a div, so the role and level are set here.
               Without it a screen reader has no heading to jump between and the

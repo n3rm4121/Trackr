@@ -70,7 +70,7 @@ function Stats() {
         ) : (
           <div className="mx-auto grid max-w-5xl gap-4">
             <section aria-labelledby="kpi-heading" className="grid gap-2">
-              <h2 id="kpi-heading" className="text-sm font-semibold">
+              <h2 id="kpi-heading" className="text-md font-semibold">
                 At a glance
               </h2>
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
@@ -80,7 +80,7 @@ function Stats() {
                     data-testid="kpi"
                     className="bg-card rounded-lg border px-3 py-2.5"
                   >
-                    <p className="text-muted-foreground text-xs">{kpi.label}</p>
+                    <p className="text-muted-foreground text-sm">{kpi.label}</p>
                     <p className="text-2xl font-semibold tabular-nums text-foreground">
                       {kpi.value}
                     </p>
@@ -97,10 +97,10 @@ function Stats() {
                 aria-labelledby="volume-heading"
                 className="bg-card rounded-lg border p-3"
               >
-                <h2 id="volume-heading" className="text-sm font-semibold">
+                <h2 id="volume-heading" className="text-md font-semibold">
                   Applications per week
                 </h2>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-sm">
                   The last 8 weeks, by the week they were sent.
                 </p>
                 <WeeklyChart weeks={insights.weeks} />
@@ -110,10 +110,10 @@ function Stats() {
                 aria-labelledby="funnel-heading"
                 className="bg-card rounded-lg border p-3"
               >
-                <h2 id="funnel-heading" className="text-sm font-semibold">
+                <h2 id="funnel-heading" className="text-md font-semibold">
                   Where they ended up
                 </h2>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-sm">
                   Each stage as a share of everything applied.
                 </p>
                 <Funnel steps={insights.funnel} />

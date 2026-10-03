@@ -17,6 +17,7 @@ import { BoardToolbar } from "@/components/board/board-toolbar";
 import { useBoard } from "@/lib/use-board";
 import type { Status } from "@/lib/applications";
 import { useCurrentUser, useLogout } from "@/lib/auth";
+import { downloadApplicationsCsv } from "@/lib/csv";
 import { toDateInputValue } from "@/lib/date";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
 
@@ -51,6 +52,7 @@ function Dashboard() {
     isSearching,
     hasAnyResults,
     stats,
+    board,
     addApplication,
     updateApplication,
     setStatus,
@@ -120,6 +122,18 @@ function Dashboard() {
     setStatus(id, next);
   }
 
+  /** Downloads every application, not just the ones the search is showing: an
+   *  export is the reader taking their data away, so it leaves with all of it.
+   *  The count comes back from the export so the toast can say what went into
+   *  the file rather than leaving the reader to open it and count. */
+  function handleExport() {
+    const count = downloadApplicationsCsv(board);
+    toast.success(
+      `Exported ${count} ${count === 1 ? "application" : "applications"}`,
+      { description: "CSV downloaded to this device." },
+    );
+  }
+
   /** A drag the user abandoned (Escape, or a drop the gesture library
    *  rejected). Nothing was sent, so the board was simply put back. */
   function handleRevert(retry: { id: string; status: Status }) {
@@ -179,6 +193,7 @@ function Dashboard() {
         onSearchChange={setSearch}
         search={search}
         onOpenStats={() => void navigate({ to: "/stats" })}
+        onExport={handleExport}
         stats={stats}
       />
 

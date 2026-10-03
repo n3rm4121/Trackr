@@ -28,6 +28,16 @@ const processQueue = (error: unknown, token: unknown = null) => {
   failedQueue = [];
 };
 
+const NO_REFRESH_URLS = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/me",
+]);
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -38,7 +48,7 @@ apiClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      originalRequest.url !== "/auth/me"
+      !NO_REFRESH_URLS.has(originalRequest.url ?? "")
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
