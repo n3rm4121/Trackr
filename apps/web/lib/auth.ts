@@ -43,8 +43,9 @@ async function postPasswordAction(
 
 /**
  * The session is cached so navigating between routes does not re-hit
- * /auth/me. A 401 is not retried: the dashboard guard reads the error to send
- * the visitor back to /login.
+ * /auth/me. A 401 first runs the refresh flow (see api.ts): only when the
+ * refresh token is dead too does the error reach the dashboard guard, which
+ * sends the visitor back to /login.
  */
 export const currentUserQuery = () =>
   queryOptions({

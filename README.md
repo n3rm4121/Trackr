@@ -44,20 +44,6 @@ Keep it under ~4MB so the README still renders on a phone.
   details, and long-press to move a card.
 - **Dark and light**, and a card is linkable: `/dashboard?open=<id>`.
 
-## Live demo
-
-Not deployed yet - a local run takes about five minutes, see
-[Running it locally](#running-it-locally).
-
-## Demo credentials
-
-<!--
-TODO(demo): add a throwaway reviewer account here once one exists. Be aware a new
-account starts with an empty board, so it needs sample data seeded into it.
--->
-
-No public demo account yet. Sign up at `/signup` and add your own cards.
-
 ## Architecture
 
 ```mermaid

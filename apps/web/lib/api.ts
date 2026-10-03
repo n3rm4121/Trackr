@@ -35,7 +35,6 @@ const NO_REFRESH_URLS = new Set([
   "/auth/logout",
   "/auth/forgot-password",
   "/auth/reset-password",
-  "/auth/me",
 ]);
 
 apiClient.interceptors.response.use(

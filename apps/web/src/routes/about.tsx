@@ -28,10 +28,10 @@ function About() {
             by job seekers.
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-10 max-w-2xl mx-auto">
-            I built this while job hunting in 2024. Spreadsheets were messy.
-            Notion was too flexible. Trello was too generic. I wanted a board
-            that understood the job hunt: statuses that match reality, notes
-            that stay with the application, a nudge when an employer goes quiet.
+            I built this while job hunting. Spreadsheets were messy. Notion was
+            too flexible. Trello was too generic. I wanted a board that
+            understood the job hunt: statuses that match reality, notes that
+            stay with the application, a nudge when an employer goes quiet.
           </p>
           <Link to="/signup">
             <Button

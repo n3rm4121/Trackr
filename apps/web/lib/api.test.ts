@@ -13,13 +13,15 @@ import { apiClient } from "./api";
  */
 function useMockTransport(
   calls: string[],
-  handler: (url: string, callIndex: number) => {
+  handler: (
+    url: string,
+    callIndex: number,
+  ) => {
     status: number;
     data: unknown;
   },
 ) {
   const previous = apiClient.defaults.adapter;
-  // @ts-expect-error the mock matches the adapter signature axios uses here
   apiClient.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
     const url = config.url ?? "";
     const index = calls.length;
@@ -76,7 +78,10 @@ describe("refresh interceptor", () => {
       url === "/auth/login"
         ? {
             status: 401,
-            data: { message: "Invalid credentials", code: "INVALID_CREDENTIALS" },
+            data: {
+              message: "Invalid credentials",
+              code: "INVALID_CREDENTIALS",
+            },
           }
         : { status: 401, data: { message: "Unauthorized" } },
     );
@@ -117,10 +122,53 @@ describe("refresh interceptor", () => {
     ).finally(restore);
 
     expect(response.status).toBe(200);
-    expect(calls).toEqual([
-      "/applications",
-      "/auth/refresh",
-      "/applications",
-    ]);
+    expect(calls).toEqual(["/applications", "/auth/refresh", "/applications"]);
+  });
+
+  it("refreshes the session check when the access token expires", async () => {
+    // The board guard reads the session through GET /auth/me. With only an
+    // expired access token this 401s — but the refresh token is still valid,
+    // so the interceptor must refresh and retry instead of handing the guard
+    // a 401 that bounces the user to /login 15 minutes after signing in.
+    const calls: string[] = [];
+    let meCalls = 0;
+    const restore = useMockTransport(calls, (url) => {
+      if (url === "/auth/me") {
+        meCalls += 1;
+        return meCalls === 1
+          ? { status: 401, data: { message: "Invalid or expired token" } }
+          : { status: 200, data: { user: { id: 1 } } };
+      }
+      return { status: 200, data: { user: { id: 1 } } };
+    });
+
+    const response = await withHangGuard(apiClient.get("/auth/me")).finally(
+      restore,
+    );
+
+    expect(response.status).toBe(200);
+    expect(calls).toEqual(["/auth/me", "/auth/refresh", "/auth/me"]);
+  });
+
+  it("still rejects the session check when the refresh token is dead", async () => {
+    // A genuinely logged-out visitor: /auth/me 401s and refresh 401s too.
+    // The 401 must still reach the board guard so it redirects to /login.
+    const calls: string[] = [];
+    const restore = useMockTransport(calls, (url) =>
+      url === "/auth/me"
+        ? { status: 401, data: { message: "Invalid or expired token" } }
+        : { status: 401, data: { message: "No refresh token" } },
+    );
+
+    const failed = await withHangGuard(
+      apiClient.get("/auth/me").then(
+        () => null,
+        (error: unknown) => error,
+      ),
+    ).finally(restore);
+
+    expect(failed).toBeInstanceOf(AxiosError);
+    expect((failed as AxiosError).response?.status).toBe(401);
+    expect(calls).toEqual(["/auth/me", "/auth/refresh"]);
   });
 });

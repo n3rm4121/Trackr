@@ -21,11 +21,11 @@
     "@fontsource-variable/raleway": "^5.3.0",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
-    "@trackr/shared": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-plugin-query": "^5.104.0",
     "@tanstack/react-query": "^5.104.0",
     "@tanstack/react-router": "^1.170.40",
+    "@trackr/shared": "workspace:*",
     "axios": "^1.20.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
@@ -53,6 +53,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.69.0",
     "vite": "^8.3.0",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.2",
+    "wrangler": "^4.147.0"
   }
 }
