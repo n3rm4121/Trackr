@@ -12,7 +12,7 @@ import {
 /**
  * These tests assert the exact cookie options, because the security
  * properties live here: httpOnly keeps tokens out of reach of JavaScript,
- * and the refresh cookie's /auth path stops the long-lived credential from
+ * and the refresh cookie's /api/auth path stops the long-lived credential from
  * riding along on ordinary API calls.
  */
 describe("cookie helpers", () => {
@@ -75,10 +75,10 @@ describe("cookie helpers", () => {
       expect(optionsFor(REFRESH_COOKIE)).toMatchObject({ httpOnly: true });
     });
 
-    it("scopes the cookie to /auth only", () => {
+    it("scopes the cookie to /api/auth only", () => {
       setRefreshCookie(res as Response, "refresh-value");
 
-      expect(optionsFor(REFRESH_COOKIE)).toMatchObject({ path: "/auth" });
+      expect(optionsFor(REFRESH_COOKIE)).toMatchObject({ path: "/api/auth" });
     });
 
     it("uses a longer lifetime than the access token", () => {
@@ -119,7 +119,7 @@ describe("cookie helpers", () => {
         .mock.calls.map(([, options]) => (options as { path?: string })?.path);
 
       expect(paths).toContain("/");
-      expect(paths).toContain("/auth");
+      expect(paths).toContain("/api/auth");
     });
 
     it("keeps httpOnly consistent with how the cookies were set", () => {

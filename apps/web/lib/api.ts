@@ -3,8 +3,10 @@ import { apiErrorSchema, validationErrorSchema } from "@trackr/shared";
 import { config } from "./config";
 
 /**
- * The API hands out httpOnly cookies, so every request must carry credentials
- * and the API must allow this origin (CORS_ORIGINS in apps/api/.env).
+ * Same-origin API client: baseURL is /api, which Vite proxies to Express
+ * locally (see vite.config.ts) and Vercel routes to the api service in
+ * production (see vercel.json). The API hands out httpOnly cookies, so every
+ * request must carry credentials.
  */
 export const apiClient = axios.create({
   baseURL: config.apiUrl,

@@ -25,4 +25,15 @@ export default defineConfig({
       "@": fileURLToPath(new URL(".", import.meta.url)),
     },
   },
+  server: {
+    // Local dev runs the web app (:5173) and the API (:3000) on different
+    // ports, so /api calls are proxied to Express. In production both share
+    // one domain and Vercel routes /api/* to the api service instead.
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
+  },
 });

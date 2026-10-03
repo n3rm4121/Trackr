@@ -18,19 +18,19 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({
     message: "Server is healthy",
     status: "OK",
   });
 });
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Hello World!");
 });
-app.use("/auth", authRouter);
+app.use("/api/auth", authRouter);
 
-app.use("/applications", applicationRouter);
+app.use("/api/applications", applicationRouter);
 
 // after routes
 app.use(errorHandler);

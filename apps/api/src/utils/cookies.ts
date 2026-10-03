@@ -4,11 +4,12 @@ import config from "../config/config.js";
 export const ACCESS_COOKIE = "access_token";
 export const REFRESH_COOKIE = "refresh_token";
 
-// The path for the refresh token cookie is set to /auth so that it is only sent
-// to the refresh endpoint. This is a security measure to prevent the refresh token
-// from being sent to other endpoints where it is not needed.
+// The API is served under the /api path prefix (see the top-level rewrites in
+// vercel.json), so the refresh cookie must live under that prefix too. A
+// browser only sends a cookie to paths beneath its Path, so Path=/auth would
+// never ride along on requests to /api/auth/refresh.
 
-const REFRESH_COOKIE_PATH = "/auth";
+const REFRESH_COOKIE_PATH = "/api/auth";
 
 function baseOptions() {
   return {

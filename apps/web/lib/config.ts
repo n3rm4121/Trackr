@@ -33,12 +33,21 @@ function readEnv(): Record<EnvKey, string> {
 const env = readEnv();
 
 function apiBaseUrl(value: string): string {
+  // Same-origin in production: the web app and the API share one domain and
+  // Vercel routes /api/* to the api service (see vercel.json). A relative
+  // base keeps preview deployments working without knowing their URL upfront.
+  if (value.startsWith("/")) {
+    if (/\s/.test(value)) {
+      throw new Error(`VITE_API_URL must not contain whitespace, got "${value}"`);
+    }
+    return value.replace(/\/+$/, "") || "/";
+  }
   let url: URL;
   try {
     url = new URL(value);
   } catch {
     throw new Error(
-      `VITE_API_URL must be an absolute URL such as http://localhost:3000, got "${value}"`,
+      `VITE_API_URL must be an absolute URL such as http://localhost:3000/api or a same-origin path such as /api, got "${value}"`,
     );
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {

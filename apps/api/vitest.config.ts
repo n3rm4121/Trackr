@@ -5,6 +5,6 @@ export default defineProject({
     name: "api",
     environment: "node",
     include: ["src/**/*.test.ts"],
-    setupFiles: ["./src/tests/setup.ts"],
+    setupFiles: ["./src/__tests__/setup.ts"],
   },
 });
