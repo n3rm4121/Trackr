@@ -26,6 +26,8 @@ const COLUMNS = [
   "Location",
   "Salary",
   "Job URL",
+  "Job description",
+  "CV file",
   "Applied",
   "Last activity",
   "Notes",
@@ -36,14 +38,19 @@ const COLUMNS = [
 const BYTE_ORDER_MARK = "\uFEFF";
 
 // One application as a row, in the order the columns are declared.
-function row(application: Application): string[] {
+function row(
+  application: Application,
+  titles: Record<Application["status"], string>,
+): string[] {
   return [
     application.company,
     application.role,
-    STATUS_META[application.status].title,
+    titles[application.status],
     application.location,
     application.salary,
     application.jobUrl,
+    application.jobDescription,
+    application.cvFileName,
     toDateInputValue(application.appliedAt),
     toDateInputValue(application.lastActivityAt),
     noteLines(application),
@@ -93,8 +100,19 @@ export function boardApplications(board: BoardState): Application[] {
 }
 
 /// Applications as CSV text, headings included. No applications is still a valid file.
-export function toCsv(applications: Application[]): string {
-  const lines = [line([...COLUMNS]), ...applications.map(row).map(line)];
+export function toCsv(
+  applications: Application[],
+  titles?: Record<Application["status"], string>,
+): string {
+  const resolved: Record<Application["status"], string> =
+    titles ??
+    Object.fromEntries(
+      STATUSES.map((status) => [status, STATUS_META[status].title]),
+    ) as Record<Application["status"], string>;
+  const lines = [
+    line([...COLUMNS]),
+    ...applications.map((application) => row(application, resolved)).map(line),
+  ];
   // CRLF because that is what Excel writes, and the one reader that guesses
   // otherwise is the one this file is most likely to be opened in.
   return `${lines.join("\r\n")}\r\n`;
@@ -107,11 +125,15 @@ export function csvFileName(now = new Date()): string {
 export function downloadApplicationsCsv(
   board: BoardState,
   now = new Date(),
+  titles?: Record<Application["status"], string>,
 ): number {
   const applications = boardApplications(board);
-  const file = new Blob([`${BYTE_ORDER_MARK}${toCsv(applications)}`], {
-    type: "text/csv;charset=utf-8",
-  });
+  const file = new Blob(
+    [`${BYTE_ORDER_MARK}${toCsv(applications, titles)}`],
+    {
+      type: "text/csv;charset=utf-8",
+    },
+  );
   const url = URL.createObjectURL(file);
   const link = document.createElement("a");
 

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { IconArrowRight, IconClock, IconKanban } from "@/components/icons";
 import { useBoard } from "@/lib/use-board";
 import { STATUS_META } from "@/lib/applications";
+import { useColumnTitles } from "@/lib/use-column-titles";
 import {
   boardInsights,
   type FunnelStep,
@@ -23,6 +24,7 @@ function Stats() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const { board, status } = useBoard();
+  const titles = useColumnTitles();
   const insights = boardInsights(board);
 
   // Opens the card on the board, so the list is a way into the work rather than a report about it.
@@ -73,7 +75,7 @@ function Stats() {
               <h2 id="kpi-heading" className="text-md font-semibold">
                 At a glance
               </h2>
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                 {insights.kpis.map((kpi) => (
                   <li
                     key={kpi.label}
@@ -116,7 +118,7 @@ function Stats() {
                 <p className="text-muted-foreground text-sm">
                   Each stage as a share of everything applied.
                 </p>
-                <Funnel steps={insights.funnel} />
+                <Funnel steps={insights.funnel} titles={titles} />
               </section>
             </div>
 
@@ -166,7 +168,7 @@ function Stats() {
                             aria-hidden
                             className={`size-1.5 rounded-full ${STATUS_META[application.status].dot}`}
                           />
-                          {STATUS_META[application.status].title}
+                          {titles[application.status]}
                         </Badge>
                         <span className="text-muted-foreground w-16 shrink-0 text-right text-xs tabular-nums">
                           {days}d quiet
@@ -221,7 +223,13 @@ function WeeklyChart({ weeks }: { weeks: WeekBucket[] }) {
   );
 }
 
-function Funnel({ steps }: { steps: FunnelStep[] }) {
+function Funnel({
+  steps,
+  titles,
+}: {
+  steps: FunnelStep[];
+  titles: Record<FunnelStep["status"], string>;
+}) {
   return (
     <ul className="mt-3 grid gap-2" data-testid="funnel">
       {steps.map((step) => {
@@ -234,7 +242,7 @@ function Funnel({ steps }: { steps: FunnelStep[] }) {
                   aria-hidden
                   className={`size-2 shrink-0 rounded-full ${meta.dot}`}
                 />
-                <span className="truncate">{meta.title}</span>
+                <span className="truncate">{titles[step.status]}</span>
               </span>
               <span className="text-muted-foreground shrink-0 tabular-nums">
                 {step.count} · {step.share}%

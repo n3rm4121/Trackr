@@ -19,6 +19,7 @@ interface Config {
   accessTokenExpiry: TokenExpiry;
   refreshTokenTtlMs: number;
   passwordResetTokenTtlMs: number;
+  seedNewUsers: boolean;
   isProduction: boolean;
   corsOrigins: string[];
   cookieSecure: boolean;
@@ -108,6 +109,12 @@ const config: Config = {
   accessTokenExpiry: parseTokenExpiry(accessTokenExpiry),
   refreshTokenTtlMs,
   passwordResetTokenTtlMs,
+  // New accounts start with an example card, so a fresh board is never blank.
+  // On by default outside production; off only when explicitly set to "false".
+  seedNewUsers:
+    process.env.SEED_NEW_USERS !== undefined
+      ? process.env.SEED_NEW_USERS.toLowerCase() === "true"
+      : !isProduction,
   isProduction,
   corsOrigins,
   cookieSecure: isProduction,

@@ -12,6 +12,7 @@ export type ApplicationDraft = {
   jobUrl: string;
   location: string;
   salary: string;
+  jobDescription: string;
   status: Status;
   appliedAt: string;
 };
@@ -51,8 +52,12 @@ export type BoardStore = {
     rejected: number;
   };
   // Every write returns void: the card is shown optimistically and the  server's answer replaces it, so there is nothing to hand back.
-  addApplication: (draft: ApplicationDraft) => void;
-  updateApplication: (id: string, draft: ApplicationDraft) => void;
+  addApplication: (draft: ApplicationDraft, cvFile?: File | null) => void;
+  updateApplication: (
+    id: string,
+    draft: ApplicationDraft,
+    cvFile?: File | null,
+  ) => void;
   setStatus: (id: string, status: Status) => void;
   deleteApplication: (id: string) => void;
   addNote: (id: string, body: string) => void;

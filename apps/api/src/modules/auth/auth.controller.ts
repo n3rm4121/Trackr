@@ -7,6 +7,8 @@ import {
 } from "@trackr/shared";
 import { AuthService } from "./auth.service.js";
 import { AuthRepository } from "./auth.repository.js";
+import { ApplicationRepository } from "../applications/application.repository.js";
+import config from "../../config/config.js";
 import { parseBody } from "../../utils/validation.js";
 import {
   setAccessCookie,
@@ -24,7 +26,11 @@ function sendAuthCookies(
 }
 
 export class AuthController {
-  private authService = new AuthService(new AuthRepository());
+  private authService = new AuthService(
+    new AuthRepository(),
+    // SEED_NEW_USERS=false starts every account with an empty board.
+    config.seedNewUsers ? new ApplicationRepository() : undefined,
+  );
 
   register = async (req: Request, res: Response) => {
     const input = parseBody(registerInputSchema, req, res);

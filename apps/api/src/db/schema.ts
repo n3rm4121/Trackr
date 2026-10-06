@@ -67,6 +67,13 @@ export const applicationsTable = pgTable(
     jobUrl: text().notNull().default(""),
     location: varchar({ length: 255 }).notNull().default(""),
     salary: varchar({ length: 255 }).notNull().default(""),
+    jobDescription: text().notNull().default(""),
+    cvFileName: text().notNull().default(""),
+    cvMime: varchar({ length: 127 }).notNull().default(""),
+    cvSize: integer().notNull().default(0),
+    // Base64-encoded file bytes. Kept out of the list response — served only
+    // through the download endpoint — so the board query stays small.
+    cvData: text().notNull().default(""),
     status: varchar({ length: 32 })
       .$type<ApplicationStatus>()
       .notNull()
@@ -116,5 +123,25 @@ export const notesTable = pgTable(
       table.applicationId,
       table.createdAt.desc(),
     ),
+  ],
+);
+
+/**
+ * Per-user column renames. One row per (user, status); absent rows fall back
+ * to STATUS_DEFAULT_TITLES from @trackr/shared.
+ */
+export const columnLabelsTable = pgTable(
+  "column_labels",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    status: varchar({ length: 32 }).$type<ApplicationStatus>().notNull(),
+    label: varchar({ length: 50 }).notNull(),
+  },
+  (table) => [
+    index("column_labels_user_idx").on(table.userId),
+    index("column_labels_user_status_idx").on(table.userId, table.status),
   ],
 );

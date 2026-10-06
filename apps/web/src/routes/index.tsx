@@ -87,21 +87,11 @@ function Index() {
                     trackr.local
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                  <span className="bg-accent text-accent-foreground px-2 py-0.5 rounded">
-                    DEMO
-                  </span>
-                  <span>Read-only preview</span>
-                </div>
               </div>
               <div className="p-4 min-h-[420px] max-h-[520px]">
                 <DemoBoard />
               </div>
             </div>
-            <p className="text-center text-sm text-muted-foreground mt-4 max-w-xl mx-auto">
-              This is a live preview — drag cards between columns to see how it
-              works. Your data stays private when you sign up.
-            </p>
           </div>
         </div>
       </section>

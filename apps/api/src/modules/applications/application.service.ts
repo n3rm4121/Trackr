@@ -1,7 +1,10 @@
 import {
   APPLICATION_STATUSES,
+  STATUS_DEFAULT_TITLES,
   type AddNoteInput,
   type Application,
+  type ApplicationStatus,
+  type ColumnLabels,
   type CreateApplicationInput,
   type ReorderApplicationsInput,
   type UpdateApplicationInput,
@@ -27,6 +30,10 @@ function toApplication(row: ApplicationWithNotes): Application {
     jobUrl: row.jobUrl,
     location: row.location,
     salary: row.salary,
+    jobDescription: row.jobDescription,
+    cvFileName: row.cvFileName,
+    cvMime: row.cvMime,
+    cvSize: row.cvSize,
     status: row.status,
     appliedAt: row.appliedAt.toISOString(),
     lastActivityAt: row.lastActivityAt.toISOString(),
@@ -64,6 +71,7 @@ export class ApplicationService {
       jobUrl: input.jobUrl,
       location: input.location,
       salary: input.salary,
+      jobDescription: input.jobDescription,
       status: input.status,
       appliedAt: new Date(input.appliedAt),
     });
@@ -192,5 +200,65 @@ export class ApplicationService {
     if (!removed) {
       throw noteNotFound();
     }
+  }
+
+  async saveCv(
+    userId: number,
+    applicationId: number,
+    file: { originalName: string; mime: string; size: number; dataBase64: string },
+  ): Promise<Application> {
+    const row = await this.applicationRepository.saveCv(
+      userId,
+      applicationId,
+      file,
+    );
+    if (!row) {
+      throw applicationNotFound();
+    }
+    return toApplication(row);
+  }
+
+  async getCv(
+    userId: number,
+    applicationId: number,
+  ): Promise<{ fileName: string; mime: string; size: number; data: Buffer }> {
+    const cv = await this.applicationRepository.getCv(userId, applicationId);
+    if (!cv) {
+      throw applicationNotFound();
+    }
+    return {
+      fileName: cv.fileName,
+      mime: cv.mime,
+      size: cv.size,
+      data: Buffer.from(cv.dataBase64, "base64"),
+    };
+  }
+
+  async removeCv(userId: number, applicationId: number): Promise<Application> {
+    const row = await this.applicationRepository.removeCv(userId, applicationId);
+    if (!row) {
+      throw applicationNotFound();
+    }
+    return toApplication(row);
+  }
+
+  async getColumnLabels(userId: number): Promise<ColumnLabels> {
+    const stored = await this.applicationRepository.getColumnLabels(userId);
+    const labels = { ...STATUS_DEFAULT_TITLES } as ColumnLabels;
+    for (const status of APPLICATION_STATUSES) {
+      const custom = stored[status as ApplicationStatus];
+      if (custom) {
+        (labels as Record<string, string>)[status] = custom;
+      }
+    }
+    return labels;
+  }
+
+  async setColumnLabels(
+    userId: number,
+    labels: ColumnLabels,
+  ): Promise<ColumnLabels> {
+    await this.applicationRepository.setColumnLabels(userId, labels);
+    return this.getColumnLabels(userId);
   }
 }

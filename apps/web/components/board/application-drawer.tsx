@@ -9,7 +9,7 @@ import type { Application, Status } from "@/lib/applications";
 import { ApplicationDetails } from "./application-details";
 
 /**
- * Desktop detail panel: a right-hand sheet 480px wide. The mobile build swaps
+ * Desktop detail panel: a right-hand sheet 560px wide. The mobile build swaps
  * this for a bottom sheet — see components/board/mobile/detail-sheet.tsx — and
  * both render the same ApplicationDetails body.
  */
@@ -32,7 +32,7 @@ export function ApplicationDrawer({
 }) {
   return (
     <Sheet open={application !== null} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-[480px]">
+      <SheetContent side="right" className="w-full sm:max-w-[560px]">
         <SheetHeader className="sr-only">
           <SheetTitle>{application?.company ?? "Application"}</SheetTitle>
           <SheetDescription>Application details and notes</SheetDescription>

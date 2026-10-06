@@ -111,6 +111,7 @@ describe("listing a board", () => {
       jobUrl: "https://stripe.com/jobs",
       location: "Dublin",
       salary: "€95k",
+      jobDescription: "",
       status: "applied",
       appliedAt: "2026-09-01T10:00:00.000Z",
     });
@@ -148,6 +149,7 @@ describe("positions", () => {
     await service.reorder(userId, {
       columns: {
         applied: [a.id, b.id],
+        screening: [],
         interview: [c.id],
         offer: [],
         rejected: [],
@@ -184,7 +186,7 @@ describe("positions", () => {
     const b = await service.create(userId, baseInput("B"));
 
     await service.reorder(userId, {
-      columns: { applied: [b.id, a.id], interview: [], offer: [], rejected: [] },
+      columns: { applied: [b.id, a.id], screening: [], interview: [], offer: [], rejected: [] },
     });
 
     // A fresh service, so this is read from the database and not from any
@@ -345,6 +347,7 @@ describe("reorder validation", () => {
     await service.reorder(userId, {
       columns: {
         applied: [staying.id],
+        screening: [],
         interview: [moving.id],
         offer: [],
         rejected: [],
@@ -375,7 +378,7 @@ describe("reorder validation", () => {
 
     await expect(
       service.reorder(userId, {
-        columns: { applied: [a.id], interview: [], offer: [], rejected: [] },
+        columns: { applied: [a.id], screening: [], interview: [], offer: [], rejected: [] },
       }),
     ).rejects.toMatchObject({ code: "INVALID_BOARD_ORDER" });
 
@@ -392,7 +395,7 @@ describe("reorder validation", () => {
 
     await expect(
       service.reorder(mine, {
-        columns: { applied: [a.id, b.id], interview: [], offer: [], rejected: [] },
+        columns: { applied: [a.id, b.id], screening: [], interview: [], offer: [], rejected: [] },
       }),
     ).rejects.toMatchObject({ code: "INVALID_BOARD_ORDER" });
   });
@@ -403,7 +406,7 @@ describe("reorder validation", () => {
 
     await expect(
       service.reorder(userId, {
-        columns: { applied: [a.id, a.id], interview: [], offer: [], rejected: [] },
+        columns: { applied: [a.id, a.id], screening: [], interview: [], offer: [], rejected: [] },
       }),
     ).rejects.toMatchObject({ code: "INVALID_BOARD_ORDER" });
   });
@@ -413,7 +416,7 @@ describe("reorder validation", () => {
 
     await expect(
       service.reorder(userId, {
-        columns: { applied: [], interview: [], offer: [], rejected: [] },
+        columns: { applied: [], screening: [], interview: [], offer: [], rejected: [] },
       }),
     ).resolves.toEqual([]);
   });
@@ -476,6 +479,7 @@ function baseInput(company: string) {
     jobUrl: "https://stripe.com/jobs/frontend-engineer",
     location: "Dublin, IE",
     salary: "€95k",
+    jobDescription: "",
     status: "applied" as const,
     appliedAt: "2026-09-01T10:00:00.000Z",
   };

@@ -24,6 +24,10 @@ const application = {
   jobUrl: "https://stripe.com/jobs/frontend-engineer",
   location: "Dublin",
   salary: "€95k",
+  jobDescription: "",
+  cvFileName: "",
+  cvMime: "",
+  cvSize: 0,
   status: "applied" as const,
   appliedAt: "2026-09-01T10:00:00.000Z",
   lastActivityAt: "2026-09-02T10:00:00.000Z",
@@ -49,6 +53,11 @@ describe("ApplicationController", () => {
         .fn()
         .mockResolvedValue({ id: 1, body: "note", createdAt: "2026-09-01T10:00:00.000Z" }),
       removeNote: vi.fn().mockResolvedValue(undefined),
+      saveCv: vi.fn().mockResolvedValue(application),
+      getCv: vi.fn(),
+      removeCv: vi.fn().mockResolvedValue(application),
+      getColumnLabels: vi.fn(),
+      setColumnLabels: vi.fn(),
     } as unknown as ApplicationService;
 
     controller = new ApplicationController(serviceInstance);
@@ -166,7 +175,13 @@ describe("ApplicationController", () => {
       mockReq = {
         user: { id: 42 },
         body: {
-          columns: { applied: [7], interview: [], offer: [], rejected: [] },
+          columns: {
+            applied: [7],
+            screening: [],
+            interview: [],
+            offer: [],
+            rejected: [],
+          },
         },
       };
 
@@ -225,6 +240,51 @@ describe("ApplicationController", () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(serviceInstance.removeNote).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cv", () => {
+    const pdfFile = {
+      originalname: "cv.pdf",
+      mimetype: "application/pdf",
+      size: 10,
+      buffer: Buffer.from("pdf-bytes"),
+    };
+
+    it("stores a PDF and returns the application", async () => {
+      mockReq = { user: { id: 42 }, params: { id: "7" }, file: pdfFile };
+
+      await controller.uploadCv(mockReq as Request, mockRes as Response);
+
+      expect(serviceInstance.saveCv).toHaveBeenCalledWith(42, 7, {
+        originalName: "cv.pdf",
+        mime: "application/pdf",
+        size: 10,
+        dataBase64: pdfFile.buffer.toString("base64"),
+      });
+      expect(mockRes.json).toHaveBeenCalledWith({ application });
+    });
+
+    it("rejects an image — CVs are text documents", async () => {
+      mockReq = {
+        user: { id: 42 },
+        params: { id: "7" },
+        file: { ...pdfFile, originalname: "cv.png", mimetype: "image/png" },
+      };
+
+      await controller.uploadCv(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(serviceInstance.saveCv).not.toHaveBeenCalled();
+    });
+
+    it("answers 400 when no file was attached", async () => {
+      mockReq = { user: { id: 42 }, params: { id: "7" } };
+
+      await controller.uploadCv(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(serviceInstance.saveCv).not.toHaveBeenCalled();
     });
   });
 });

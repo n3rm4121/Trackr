@@ -140,6 +140,7 @@ export function needsFollowUp(
  */
 export function kpis(board: BoardState, total: number): Kpi[] {
   const applied = board.columns.applied.length;
+  const screening = board.columns.screening.length;
   const interviews = board.columns.interview.length;
   const offers = board.columns.offer.length;
   const rejected = board.columns.rejected.length;
@@ -149,6 +150,11 @@ export function kpis(board: BoardState, total: number): Kpi[] {
 
   return [
     { label: "Applied", value: `${applied}`, hint: "sent and waiting" },
+    {
+      label: "Screening",
+      value: `${screening}`,
+      hint: `${percent(screening)} of applied`,
+    },
     {
       label: "Interviews",
       value: `${interviews}`,

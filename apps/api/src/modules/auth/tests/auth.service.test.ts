@@ -8,6 +8,11 @@ import {
 } from "../../../utils/token.js";
 import { sendPasswordResetEmail } from "../../../utils/mailer.js";
 import { FakeAuthRepository, asRepository } from "./helpers/fakeRepository.js";
+import {
+  FakeApplicationRepository,
+  asRepository as asApplicationsRepository,
+} from "../../applications/tests/helpers/fakeApplicationRepository.js";
+import type { ApplicationRepository } from "../../applications/application.repository.js";
 
 // Only the delivery is faked. The URL builder stays real, because the shape of
 // the emailed link is part of what these tests are checking.
@@ -71,6 +76,39 @@ describe("AuthService", () => {
         status: 409,
         message: "Email already registered",
       });
+    });
+
+    it("seeds one example application in the applied column", async () => {
+      const apps = new FakeApplicationRepository();
+      const seeded = new AuthService(
+        asRepository(repo),
+        asApplicationsRepository(apps),
+      );
+
+      const user = await seeded.register(CREDENTIALS);
+
+      const cards = apps.all().filter((row) => row.userId === user.id);
+      expect(cards).toHaveLength(1);
+      expect(cards[0]!.status).toBe("applied");
+      expect(cards[0]!.notes).toHaveLength(1);
+    });
+
+    it("still returns the user when seeding fails", async () => {
+      const failing = {
+        create: () => Promise.reject(new Error("db down")),
+        addNote: () => Promise.reject(new Error("db down")),
+      } as unknown as ApplicationRepository;
+      const seeded = new AuthService(asRepository(repo), failing);
+
+      await expect(seeded.register(CREDENTIALS)).resolves.toMatchObject({
+        email: CREDENTIALS.email,
+      });
+    });
+
+    it("seeds nothing when no application repository is wired", async () => {
+      await registerUser();
+
+      expect(repo.users).toHaveLength(1);
     });
   });
 

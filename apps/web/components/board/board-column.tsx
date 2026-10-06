@@ -1,23 +1,29 @@
+import { useState } from "react";
 import { useDroppable } from "@dnd-kit/react";
 import { cn } from "cn";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InboxIcon } from "@hugeicons/core-free-icons";
 import { IconAdd } from "@/components/icons";
+import { Input } from "@/components/ui/input";
 import { STATUS_META, type Status } from "@/lib/applications";
 
 export function BoardColumn({
   status,
+  title,
   count,
   highlighted,
   onQuickAdd,
+  onRename,
   showHeader = true,
   children,
 }: {
   status: Status;
+  title?: string;
   count: number;
   // The dragged card is projected into this column, so this is the drop zone.
   highlighted: boolean;
   onQuickAdd: (status: Status) => void;
+  onRename?: (status: Status, label: string) => void;
   // The mobile tab strip already names the column and shows the count, so the
   // header is dropped there rather than repeated above every card.
   showHeader?: boolean;
@@ -25,6 +31,9 @@ export function BoardColumn({
   children: React.ReactNode;
 }) {
   const meta = STATUS_META[status];
+  const displayTitle = title ?? meta.title;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(displayTitle);
   // The droppable is what makes the column a valid destination, so it covers
   // the header too rather than only the scrolling area below it. No explicit
   // collision priority: a card under the pointer is closer to the pointer than
@@ -63,22 +72,76 @@ export function BoardColumn({
             aria-hidden
             className={cn("size-2 shrink-0 rounded-full", meta.dot)}
           />
-          <h2
-            id={`column-${status}`}
-            className="min-w-0 flex-1 truncate text-sm font-semibold"
-          >
-            {meta.title}
-          </h2>
+          {editing ? (
+            <form
+              className="min-w-0 flex-1"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const next = draft.trim().slice(0, 50);
+                if (next) {
+                  onRename?.(status, next);
+                }
+                setEditing(false);
+              }}
+            >
+              <Input
+                autoFocus
+                value={draft}
+                maxLength={50}
+                aria-label={`Rename ${displayTitle} column`}
+                className="h-7 text-sm font-semibold"
+                onChange={(event) => setDraft(event.target.value)}
+                onBlur={() => {
+                  const next = draft.trim().slice(0, 50);
+                  if (next && next !== displayTitle) {
+                    onRename?.(status, next);
+                  } else {
+                    setDraft(displayTitle);
+                  }
+                  setEditing(false);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setDraft(displayTitle);
+                    setEditing(false);
+                  }
+                }}
+              />
+            </form>
+          ) : (
+            <h2
+              id={`column-${status}`}
+              className="min-w-0 flex-1 truncate text-sm font-semibold"
+            >
+              {displayTitle}
+            </h2>
+          )}
           <span
             data-testid="column-count"
             className="bg-background text-muted-foreground rounded-full border px-1.5 py-0.5 text-[11px] font-medium tabular-nums"
           >
             {count}
           </span>
+          {onRename ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(displayTitle);
+                setEditing(true);
+              }}
+              aria-label={`Rename ${displayTitle} column`}
+              title={`Rename ${displayTitle}`}
+              className="text-muted-foreground hover:bg-background hover:text-foreground rounded-md border p-1 transition-colors"
+            >
+              <span aria-hidden className="block size-3.5 text-xs leading-none">
+                ✎
+              </span>
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => onQuickAdd(status)}
-            aria-label={`Add application to ${meta.title}`}
+            aria-label={`Add application to ${displayTitle}`}
             className="text-muted-foreground hover:bg-background hover:text-foreground rounded-md border p-1 transition-colors"
           >
             <IconAdd className="size-3.5" aria-hidden />
@@ -89,7 +152,7 @@ export function BoardColumn({
            count, so the visible header is dropped and only the heading stays,
            for the tab panel's label. */
         <h2 id={`column-${status}`} className="sr-only">
-          {meta.title}
+          {displayTitle}
         </h2>
       )}
 

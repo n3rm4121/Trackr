@@ -13,6 +13,11 @@ import {
 } from "@/lib/applications";
 import { useBoard } from "@/lib/use-board";
 import {
+  useColumnLabels,
+  useUpdateColumnLabels,
+} from "@/lib/applications-api";
+import { resolveTitles } from "@/lib/use-column-titles";
+import {
   DESKTOP_BOARD_QUERY,
   useCoarsePointer,
   useMediaQuery,
@@ -126,6 +131,9 @@ export function Board({
 }) {
   const { visibleColumns, board, dragStart, dragOver, dragEnd } =
     useBoard();
+  const { data: labelData } = useColumnLabels();
+  const updateLabels = useUpdateColumnLabels();
+  const titles = resolveTitles(labelData ?? null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Status>("applied");
   const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
@@ -147,9 +155,13 @@ export function Board({
     <BoardColumn
       key={status}
       status={status}
+      title={titles[status]}
       count={visibleColumns[status].length}
       highlighted={status === activeColumn}
       onQuickAdd={onQuickAdd}
+      onRename={(renamed, label) =>
+        updateLabels.mutate({ ...titles, [renamed]: label })
+      }
       showHeader={desktop}
     >
       {columnChildren(
@@ -188,7 +200,7 @@ export function Board({
         {desktop ? (
           <div
             data-testid="board"
-            className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
           >
             {STATUSES.map((status) => renderColumn(status))}
           </div>
@@ -196,6 +208,7 @@ export function Board({
           <div data-testid="board" className="flex min-h-0 flex-1 flex-col">
             <MobileBoard
               active={activeTab}
+              titles={titles}
               counts={
                 Object.fromEntries(
                   STATUSES.map((status) => [

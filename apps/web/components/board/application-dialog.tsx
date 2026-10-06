@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -17,14 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { STATUSES, STATUS_META, type Status } from "@/lib/applications";
+import { STATUSES, type Status } from "@/lib/applications";
+import { CV_ACCEPT, CV_MAX_BYTES } from "@/lib/cv";
+import { useColumnTitles } from "@/lib/use-column-titles";
 import type { ApplicationDraft } from "@/lib/board-context";
 import { toDateInputValue } from "@/lib/date";
 
 // The form edits exactly the fields the store's draft type declares, so the two cannot drift apart.
 type Draft = ApplicationDraft;
 
-type Errors = Partial<Record<keyof Draft, string>>;
+type Errors = Partial<Record<keyof Draft, string>> & { cv?: string };
 
 function emptyDraft(status: Status): Draft {
   return {
@@ -33,6 +36,7 @@ function emptyDraft(status: Status): Draft {
     jobUrl: "",
     location: "",
     salary: "",
+    jobDescription: "",
     status,
     appliedAt: toDateInputValue(new Date()),
   };
@@ -52,25 +56,37 @@ function validate(draft: Draft): Errors {
   if (draft.jobUrl.trim() && !/^https?:\/\/\S+$/i.test(draft.jobUrl.trim())) {
     errors.jobUrl = "Enter a full URL starting with http:// or https://";
   }
+  if (draft.jobDescription.trim().length > 10000) {
+    errors.jobDescription = "Job description must be at most 10000 characters";
+  }
   if (!draft.appliedAt) {
     errors.appliedAt = "Applied date is required";
   }
   return errors;
 }
 
+function validateCvFile(file: File): string | null {
+  if (file.size > CV_MAX_BYTES) {
+    return "CV must be at most 5MB";
+  }
+  return null;
+}
+
 type FormProps = {
   mode: "add" | "edit";
   applicationId?: string;
   initial?: Draft;
+  existingCvName?: string;
   defaultStatus: Status;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (draft: Draft, id?: string) => Promise<void> | void;
+  onSubmit: (draft: Draft, id?: string, cvFile?: File | null) => Promise<void> | void;
 };
 
 function ApplicationForm({
   mode,
   applicationId,
   initial,
+  existingCvName,
   defaultStatus,
   onOpenChange,
   onSubmit,
@@ -83,6 +99,8 @@ function ApplicationForm({
   );
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const titles = useColumnTitles();
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -94,13 +112,23 @@ function ApplicationForm({
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const found = validate(draft);
+    if (cvFile) {
+      const cvError = validateCvFile(cvFile);
+      if (cvError) {
+        found.cv = cvError;
+      }
+    }
     setErrors(found);
     if (Object.keys(found).length > 0) {
       return;
     }
     setSaving(true);
     try {
-      await onSubmit(draft, mode === "edit" ? applicationId : undefined);
+      await onSubmit(
+        draft,
+        mode === "edit" ? applicationId : undefined,
+        cvFile,
+      );
       onOpenChange(false);
     } finally {
       setSaving(false);
@@ -156,6 +184,71 @@ function ApplicationForm({
         {field("salary", "Salary range", "€95k – €115k")}
 
         <div className="grid gap-1.5">
+          <Label htmlFor="application-jobDescription">
+            Job description
+          </Label>
+          <Textarea
+            id="application-jobDescription"
+            name="jobDescription"
+            value={draft.jobDescription}
+            placeholder="Paste the posting — responsibilities, stack, closing date…"
+            rows={4}
+            aria-invalid={errors.jobDescription ? true : undefined}
+            aria-describedby={
+              errors.jobDescription
+                ? "application-jobDescription-error"
+                : undefined
+            }
+            onChange={(event) =>
+              update("jobDescription", event.target.value)
+            }
+          />
+          {errors.jobDescription ? (
+            <p
+              id="application-jobDescription-error"
+              className="text-destructive text-xs"
+            >
+              {errors.jobDescription}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-1.5">
+          <Label htmlFor="application-cv">
+            CV {mode === "edit" ? "(upload replaces existing)" : "(per job)"}
+          </Label>
+          {mode === "edit" && existingCvName ? (
+            <p className="text-muted-foreground text-xs">
+              Current file: <span className="font-medium">{existingCvName}</span>
+            </p>
+          ) : null}
+          <Input
+            id="application-cv"
+            name="cv"
+            type="file"
+            accept={CV_ACCEPT}
+            aria-describedby={errors.cv ? "application-cv-error" : undefined}
+            onChange={(event) => {
+              const file = event.target.files?.[0] ?? null;
+              setCvFile(file);
+              setErrors((current) =>
+                current.cv ? { ...current, cv: undefined } : current,
+              );
+            }}
+          />
+          <p className="text-muted-foreground text-[11px]">
+            {cvFile
+              ? `${cvFile.name} · ${(cvFile.size / 1024).toFixed(1)} KB`
+              : "PDF, Word, TXT or RTF · max 5MB. A different CV can be submitted per job."}
+          </p>
+          {errors.cv ? (
+            <p id="application-cv-error" className="text-destructive text-xs">
+              {errors.cv}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-1.5">
           <Label htmlFor="application-status">Status</Label>
           <Select
             value={draft.status}
@@ -166,16 +259,16 @@ function ApplicationForm({
             }}
           >
             <SelectTrigger id="application-status" className="w-full">
-              <SelectValue>{STATUS_META[draft.status].title}</SelectValue>
+              <SelectValue>{titles[draft.status]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {STATUSES.map((status) => (
                 <SelectItem
                   key={status}
                   value={status}
-                  label={STATUS_META[status].title}
+                  label={titles[status]}
                 >
-                  {STATUS_META[status].title}
+                  {titles[status]}
                 </SelectItem>
               ))}
             </SelectContent>

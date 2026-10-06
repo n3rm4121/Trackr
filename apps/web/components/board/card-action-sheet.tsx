@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { IconEdit, IconNote, IconTrash } from "@/components/icons";
 import { STATUSES, STATUS_META, type Application, type Status } from "@/lib/applications";
+import { useColumnTitles } from "@/lib/use-column-titles";
 import { daysSince } from "@/lib/date";
 
 /**
@@ -32,6 +33,38 @@ export function CardActionSheet({
   }
 
   const silent = daysSince(application.lastActivityAt) >= 7;
+  // Hooks before early return would break; titles fetched via inner component.
+  return (
+    <SheetContentWrapper
+      application={application}
+      silent={silent}
+      onOpenChange={onOpenChange}
+      onOpen={onOpen}
+      onEdit={onEdit}
+      onMove={onMove}
+      onDelete={onDelete}
+    />
+  );
+}
+
+function SheetContentWrapper({
+  application,
+  silent,
+  onOpenChange,
+  onOpen,
+  onEdit,
+  onMove,
+  onDelete,
+}: {
+  application: Application;
+  silent: boolean;
+  onOpenChange: (open: boolean) => void;
+  onOpen: () => void;
+  onEdit: () => void;
+  onMove: (status: Status) => void;
+  onDelete: () => void;
+}) {
+  const titles = useColumnTitles();
 
   return (
     <Sheet open onOpenChange={onOpenChange}>
@@ -65,7 +98,7 @@ export function CardActionSheet({
                 />
               }
             >
-              {STATUS_META[status].title}
+              {titles[status]}
             </Action>
           ))}
         </div>

@@ -39,6 +39,12 @@ export const STATUS_META: Record<Status, StatusMeta> = {
     dot: "bg-sky-500",
     accent: "text-sky-600 dark:text-sky-400",
   },
+  screening: {
+    id: "screening",
+    title: "Screening",
+    dot: "bg-violet-500",
+    accent: "text-violet-600 dark:text-violet-400",
+  },
   interview: {
     id: "interview",
     title: "Interview Scheduled",
@@ -73,6 +79,10 @@ export type Application = {
   jobUrl: string;
   location: string;
   salary: string;
+  jobDescription: string;
+  cvFileName: string;
+  cvMime: string;
+  cvSize: number;
   status: Status;
   appliedAt: string;
   /// Last time this application moved or was written on. Drives the "no response" badge, so it is updated on note writes too.
@@ -105,7 +115,13 @@ export type BoardState = {
 
 export function emptyBoard(): BoardState {
   return {
-    columns: { applied: [], interview: [], offer: [], rejected: [] },
+    columns: {
+      applied: [],
+      screening: [],
+      interview: [],
+      offer: [],
+      rejected: [],
+    },
     applications: {},
   };
 }

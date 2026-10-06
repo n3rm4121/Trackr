@@ -67,6 +67,7 @@ export function ApplicationCard({
   const isOffer = application.status === "offer";
   const isRejected = application.status === "rejected";
   const isInterview = application.status === "interview";
+  const isScreening = application.status === "screening";
 
   return (
     <article
@@ -106,6 +107,8 @@ export function ApplicationCard({
         isRejected && "opacity-60",
         // Interview cards get a subtle amber accent
         isInterview && "border-amber-500/30",
+        // Screening cards get a violet accent
+        isScreening && "border-violet-500/30",
         // Silent cards get a warning border
         silent && "border-amber-500/50",
       )}
@@ -116,6 +119,7 @@ export function ApplicationCard({
           "absolute top-0 left-0 right-0 h-1 rounded-t-lg",
           isOffer && "bg-emerald-500",
           isInterview && "bg-amber-500",
+          isScreening && "bg-violet-500",
           isRejected && "bg-rose-500",
           application.status === "applied" && "bg-sky-500",
         )}
@@ -237,6 +241,12 @@ export function ApplicationCard({
             <dt className="sr-only">Salary</dt>
             <IconDollar className="size-3 shrink-0" aria-hidden />
             <dd className="truncate tabular-nums">{application.salary}</dd>
+          </div>
+        ) : null}
+        {application.cvFileName ? (
+          <div className="flex items-center gap-1">
+            <dt className="sr-only">CV</dt>
+            <dd className="truncate">📄 {application.cvFileName}</dd>
           </div>
         ) : null}
       </dl>

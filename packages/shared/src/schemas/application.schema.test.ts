@@ -30,6 +30,10 @@ const validApplication: Application = {
   jobUrl: "https://stripe.com/jobs/frontend-engineer",
   location: "Dublin, IE · Hybrid",
   salary: "€95k – €115k",
+  jobDescription: "Build checkout flows.",
+  cvFileName: "",
+  cvMime: "",
+  cvSize: 0,
   status: "applied",
   appliedAt: iso,
   lastActivityAt: iso,
@@ -37,8 +41,14 @@ const validApplication: Application = {
 };
 
 describe("applicationStatusSchema", () => {
-  it("accepts the four board columns", () => {
-    for (const status of ["applied", "interview", "offer", "rejected"]) {
+  it("accepts the five board columns", () => {
+    for (const status of [
+      "applied",
+      "screening",
+      "interview",
+      "offer",
+      "rejected",
+    ]) {
       expect(applicationStatusSchema.safeParse(status).success).toBe(true);
     }
   });
@@ -57,6 +67,7 @@ describe("createApplicationInputSchema", () => {
     jobUrl: "https://stripe.com/jobs/frontend-engineer",
     location: "Dublin, IE",
     salary: "€95k",
+    jobDescription: "Build checkout flows.",
     status: "applied",
     appliedAt: iso,
   };
@@ -82,14 +93,20 @@ describe("createApplicationInputSchema", () => {
   });
 
   it("defaults the optional fields to empty strings", () => {
-    const { jobUrl: _jobUrl, location: _location, salary: _salary, ...minimal } =
-      valid;
+    const {
+      jobUrl: _jobUrl,
+      location: _location,
+      salary: _salary,
+      jobDescription: _jobDescription,
+      ...minimal
+    } = valid;
     const result = createApplicationInputSchema.safeParse(minimal);
 
     expect(result.success).toBe(true);
     expect(result.success && result.data.jobUrl).toBe("");
     expect(result.success && result.data.location).toBe("");
     expect(result.success && result.data.salary).toBe("");
+    expect(result.success && result.data.jobDescription).toBe("");
   });
 
   it("rejects a blank company", () => {
@@ -174,15 +191,22 @@ describe("updateApplicationInputSchema", () => {
     expect(result.success && "jobUrl" in result.data).toBe(false);
     expect(result.success && "location" in result.data).toBe(false);
     expect(result.success && "salary" in result.data).toBe(false);
+    expect(result.success && "jobDescription" in result.data).toBe(false);
   });
 });
 
 describe("reorderApplicationsInputSchema", () => {
   const valid = {
-    columns: { applied: [3, 1], interview: [9], offer: [4], rejected: [] },
+    columns: {
+      applied: [3, 1],
+      screening: [7],
+      interview: [9],
+      offer: [4],
+      rejected: [],
+    },
   };
 
-  it("accepts the four ordered columns", () => {
+  it("accepts the five ordered columns", () => {
     expect(reorderApplicationsInputSchema.safeParse(valid).success).toBe(true);
   });
 

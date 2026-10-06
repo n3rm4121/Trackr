@@ -233,16 +233,21 @@ function Dashboard() {
             ? toDraft(getApplication(dialog.id))
             : undefined
         }
+        existingCvName={
+          dialog?.mode === "edit"
+            ? (getApplication(dialog.id)?.cvFileName || undefined)
+            : undefined
+        }
         onOpenChange={(next) => {
           if (!next) {
             setDialog(null);
           }
         }}
-        onSubmit={(draft, id) => {
+        onSubmit={(draft, id, cvFile) => {
           if (id) {
-            updateApplication(id, draft);
+            updateApplication(id, draft, cvFile);
           } else {
-            addApplication(draft);
+            addApplication(draft, cvFile);
           }
         }}
       />
@@ -335,6 +340,7 @@ function toDraft(
     jobUrl: application.jobUrl,
     location: application.location,
     salary: application.salary,
+    jobDescription: application.jobDescription,
     status: application.status,
     appliedAt: toDateInputValue(application.appliedAt),
   };

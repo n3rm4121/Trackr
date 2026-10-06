@@ -10,6 +10,10 @@ const applied: Application = {
   jobUrl: "https://stripe.com/jobs/frontend-engineer",
   location: "Dublin, IE · Hybrid",
   salary: "€95k – €115k",
+  jobDescription: "",
+  cvFileName: "",
+  cvMime: "",
+  cvSize: 0,
   status: "applied",
   appliedAt: "2026-09-30T09:15:00.000Z",
   lastActivityAt: "2026-10-02T11:00:00.000Z",
@@ -36,6 +40,7 @@ const interviewing: Application = {
 function boardOf(...applications: Application[]): BoardState {
   const columns: BoardState["columns"] = {
     applied: [],
+    screening: [],
     interview: [],
     offer: [],
     rejected: [],
@@ -70,7 +75,7 @@ function fieldsOf(row: string): string[] {
 describe("toCsv", () => {
   it("leads with the headings a spreadsheet shows", () => {
     expect(lines(toCsv([]))).toEqual([
-      '"Company","Role","Status","Location","Salary","Job URL","Applied","Last activity","Notes"',
+      '"Company","Role","Status","Location","Salary","Job URL","Job description","CV file","Applied","Last activity","Notes"',
     ]);
   });
 
@@ -160,13 +165,19 @@ describe("boardApplications", () => {
 
   it("has nothing to export on an empty board", () => {
     const board: BoardState = {
-      columns: { applied: [], interview: [], offer: [], rejected: [] },
+      columns: {
+        applied: [],
+        screening: [],
+        interview: [],
+        offer: [],
+        rejected: [],
+      },
       applications: {},
     };
 
     expect(boardApplications(board)).toEqual([]);
     expect(toCsv(boardApplications(board))).toBe(
-      '"Company","Role","Status","Location","Salary","Job URL","Applied","Last activity","Notes"\r\n',
+      '"Company","Role","Status","Location","Salary","Job URL","Job description","CV file","Applied","Last activity","Notes"\r\n',
     );
   });
 });

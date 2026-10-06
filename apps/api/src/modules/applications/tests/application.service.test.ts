@@ -38,6 +38,7 @@ function order(ids: Partial<Record<ApplicationStatus, number[]>>) {
   return reorderApplicationsInputSchema.parse({
     columns: {
       applied: ids.applied ?? [],
+      screening: ids.screening ?? [],
       interview: ids.interview ?? [],
       offer: ids.offer ?? [],
       rejected: ids.rejected ?? [],
@@ -205,6 +206,7 @@ describe("reorder", () => {
 
     expect(fake.lastAppliedOrder).toEqual({
       applied: [b.id, a.id],
+      screening: [],
       interview: [],
       offer: [],
       rejected: [],

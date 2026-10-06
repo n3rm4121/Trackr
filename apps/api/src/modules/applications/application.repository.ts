@@ -1,7 +1,11 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { APPLICATION_STATUSES, type ApplicationStatus } from "@trackr/shared";
-import { applicationsTable, notesTable } from "../../db/schema.js";
+import {
+  applicationsTable,
+  columnLabelsTable,
+  notesTable,
+} from "../../db/schema.js";
 import { db } from "../../db/index.js";
 
 type ApplicationRow = typeof applicationsTable.$inferSelect;
@@ -17,6 +21,10 @@ export type ApplicationWithNotes = {
   jobUrl: string;
   location: string;
   salary: string;
+  jobDescription: string;
+  cvFileName: string;
+  cvMime: string;
+  cvSize: number;
   status: ApplicationStatus;
   appliedAt: Date;
   lastActivityAt: Date;
@@ -35,6 +43,7 @@ export type ApplicationPatch = {
   jobUrl?: string | undefined;
   location?: string | undefined;
   salary?: string | undefined;
+  jobDescription?: string | undefined;
   status?: ApplicationStatus | undefined;
   appliedAt?: Date | undefined;
 };
@@ -107,6 +116,7 @@ export class ApplicationRepository {
       jobUrl: string;
       location: string;
       salary: string;
+      jobDescription: string;
       status: ApplicationStatus;
       appliedAt: Date;
     },
@@ -123,6 +133,7 @@ export class ApplicationRepository {
         jobUrl: input.jobUrl,
         location: input.location,
         salary: input.salary,
+        jobDescription: input.jobDescription,
         status: input.status,
         position,
         appliedAt: input.appliedAt,
@@ -202,6 +213,7 @@ export class ApplicationRepository {
           jobUrl: patch.jobUrl,
           location: patch.location,
           salary: patch.salary,
+          jobDescription: patch.jobDescription,
           appliedAt: patch.appliedAt,
           ...(patch.status === undefined ? {} : { status: patch.status }),
           ...(movingColumns
@@ -369,6 +381,140 @@ export class ApplicationRepository {
     return rows.length > 0;
   }
 
+  async saveCv(
+    userId: number,
+    applicationId: number,
+    file: { originalName: string; mime: string; size: number; dataBase64: string },
+  ): Promise<ApplicationWithNotes | undefined> {
+    const rows = await db
+      .update(applicationsTable)
+      .set({
+        cvFileName: file.originalName,
+        cvMime: file.mime,
+        cvSize: file.size,
+        cvData: file.dataBase64,
+        lastActivityAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(applicationsTable.id, applicationId),
+          eq(applicationsTable.userId, userId),
+        ),
+      )
+      .returning({ id: applicationsTable.id });
+
+    if (rows.length === 0) {
+      return undefined;
+    }
+    return this.findById(userId, applicationId);
+  }
+
+  async getCv(
+    userId: number,
+    applicationId: number,
+  ): Promise<
+    | { fileName: string; mime: string; size: number; dataBase64: string }
+    | undefined
+  > {
+    const [row] = await db
+      .select({
+        cvFileName: applicationsTable.cvFileName,
+        cvMime: applicationsTable.cvMime,
+        cvSize: applicationsTable.cvSize,
+        cvData: applicationsTable.cvData,
+      })
+      .from(applicationsTable)
+      .where(
+        and(
+          eq(applicationsTable.id, applicationId),
+          eq(applicationsTable.userId, userId),
+        ),
+      );
+
+    if (!row || !row.cvFileName || !row.cvData) {
+      return undefined;
+    }
+    return {
+      fileName: row.cvFileName,
+      mime: row.cvMime || "application/octet-stream",
+      size: row.cvSize,
+      dataBase64: row.cvData,
+    };
+  }
+
+  async removeCv(
+    userId: number,
+    applicationId: number,
+  ): Promise<ApplicationWithNotes | undefined> {
+    const rows = await db
+      .update(applicationsTable)
+      .set({
+        cvFileName: "",
+        cvMime: "",
+        cvSize: 0,
+        cvData: "",
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(applicationsTable.id, applicationId),
+          eq(applicationsTable.userId, userId),
+        ),
+      )
+      .returning({ id: applicationsTable.id });
+
+    if (rows.length === 0) {
+      return undefined;
+    }
+    return this.findById(userId, applicationId);
+  }
+
+  async getColumnLabels(
+    userId: number,
+  ): Promise<Partial<Record<ApplicationStatus, string>>> {
+    const rows = await db
+      .select({ status: columnLabelsTable.status, label: columnLabelsTable.label })
+      .from(columnLabelsTable)
+      .where(eq(columnLabelsTable.userId, userId));
+
+    const labels: Partial<Record<ApplicationStatus, string>> = {};
+    for (const row of rows) {
+      labels[row.status] = row.label;
+    }
+    return labels;
+  }
+
+  async setColumnLabels(
+    userId: number,
+    labels: Record<ApplicationStatus, string>,
+  ): Promise<void> {
+    await db.transaction(async (tx) => {
+      for (const status of APPLICATION_STATUSES) {
+        const label = labels[status];
+        const [existing] = await tx
+          .select({ id: columnLabelsTable.id })
+          .from(columnLabelsTable)
+          .where(
+            and(
+              eq(columnLabelsTable.userId, userId),
+              eq(columnLabelsTable.status, status),
+            ),
+          );
+        if (existing) {
+          await tx
+            .update(columnLabelsTable)
+            .set({ label })
+            .where(eq(columnLabelsTable.id, existing.id));
+        } else {
+          await tx
+            .insert(columnLabelsTable)
+            .values({ userId, status, label });
+        }
+      }
+    });
+  }
+
   private async nextPosition(
     userId: number,
     status: ApplicationStatus,
@@ -445,6 +591,10 @@ export class ApplicationRepository {
       jobUrl: row.jobUrl,
       location: row.location,
       salary: row.salary,
+      jobDescription: row.jobDescription,
+      cvFileName: row.cvFileName,
+      cvMime: row.cvMime,
+      cvSize: row.cvSize,
       status: row.status,
       appliedAt: row.appliedAt,
       lastActivityAt: row.lastActivityAt,

@@ -50,6 +50,10 @@ export class FakeApplicationRepository {
       jobUrl: row.jobUrl ?? "",
       location: row.location ?? "",
       salary: row.salary ?? "",
+      jobDescription: row.jobDescription ?? "",
+      cvFileName: row.cvFileName ?? "",
+      cvMime: row.cvMime ?? "",
+      cvSize: row.cvSize ?? 0,
       status: row.status,
       appliedAt: row.appliedAt ?? new Date("2026-01-01T00:00:00.000Z"),
       lastActivityAt:
@@ -81,6 +85,7 @@ export class FakeApplicationRepository {
       jobUrl: string;
       location: string;
       salary: string;
+      jobDescription: string;
       status: ApplicationStatus;
       appliedAt: Date;
     },
@@ -91,6 +96,7 @@ export class FakeApplicationRepository {
       jobUrl: input.jobUrl,
       location: input.location,
       salary: input.salary,
+      jobDescription: input.jobDescription,
       status: input.status,
       appliedAt: input.appliedAt,
       // Mirrors the repository: a new card is activity on itself.
@@ -159,6 +165,58 @@ export class FakeApplicationRepository {
     const before = row.notes.length;
     row.notes = row.notes.filter((note) => note.id !== noteId);
     return row.notes.length !== before;
+  }
+
+  async saveCv(
+    userId: number,
+    applicationId: number,
+    file: { originalName: string; mime: string; size: number; dataBase64: string },
+  ) {
+    const row = await this.findById(userId, applicationId);
+    if (!row) {
+      return undefined;
+    }
+    row.cvFileName = file.originalName;
+    row.cvMime = file.mime;
+    row.cvSize = file.size;
+    return row;
+  }
+
+  async getCv(userId: number, applicationId: number) {
+    const row = await this.findById(userId, applicationId);
+    if (!row || !row.cvFileName) {
+      return undefined;
+    }
+    return {
+      fileName: row.cvFileName,
+      mime: row.cvMime,
+      size: row.cvSize,
+      dataBase64: "ZHVtbXk=",
+    };
+  }
+
+  async removeCv(userId: number, applicationId: number) {
+    const row = await this.findById(userId, applicationId);
+    if (!row) {
+      return undefined;
+    }
+    row.cvFileName = "";
+    row.cvMime = "";
+    row.cvSize = 0;
+    return row;
+  }
+
+  private columnLabels: Partial<Record<ApplicationStatus, string>> = {};
+
+  async getColumnLabels() {
+    return { ...this.columnLabels };
+  }
+
+  async setColumnLabels(
+    _userId: number,
+    labels: Record<ApplicationStatus, string>,
+  ) {
+    this.columnLabels = { ...labels };
   }
 
   private owned(userId: number): StoredApplication[] {

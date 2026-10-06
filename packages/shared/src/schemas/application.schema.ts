@@ -5,12 +5,24 @@ import { z } from "zod";
 
 export const APPLICATION_STATUSES = [
   "applied",
+  "screening",
   "interview",
   "offer",
   "rejected",
 ] as const;
 
 export const applicationStatusSchema = z.enum(APPLICATION_STATUSES);
+
+export const STATUS_DEFAULT_TITLES: Record<
+  z.infer<typeof applicationStatusSchema>,
+  string
+> = {
+  applied: "Applied",
+  screening: "Screening",
+  interview: "Interview Scheduled",
+  offer: "Offer",
+  rejected: "Rejected",
+};
 
 const requiredText = (max: number, label: string) =>
   z
@@ -48,6 +60,10 @@ export const applicationSchema = z.object({
   jobUrl: z.string(),
   location: z.string(),
   salary: z.string(),
+  jobDescription: z.string(),
+  cvFileName: z.string(),
+  cvMime: z.string(),
+  cvSize: z.number().int().nonnegative(),
   status: applicationStatusSchema,
   appliedAt: z.iso.datetime(),
   lastActivityAt: z.iso.datetime(),
@@ -61,6 +77,7 @@ export const createApplicationInputSchema = z.object({
   jobUrl: jobUrl.default(""),
   location: optionalText(255, "Location").default(""),
   salary: optionalText(255, "Salary").default(""),
+  jobDescription: optionalText(10000, "Job description").default(""),
   status: applicationStatusSchema.default("applied"),
   appliedAt: isoDate,
 });
@@ -72,6 +89,7 @@ export const updateApplicationInputSchema = z
     jobUrl: jobUrl.optional(),
     location: optionalText(255, "Location").optional(),
     salary: optionalText(255, "Salary").optional(),
+    jobDescription: optionalText(10000, "Job description").optional(),
     status: applicationStatusSchema.optional(),
     appliedAt: isoDate.optional(),
   })
@@ -90,6 +108,7 @@ const idListSchema = z.array(z.number().int().positive());
 export const reorderApplicationsInputSchema = z.object({
   columns: z.object({
     applied: idListSchema,
+    screening: idListSchema,
     interview: idListSchema,
     offer: idListSchema,
     rejected: idListSchema,
@@ -116,6 +135,28 @@ export const noteResponseSchema = z.object({
   note: noteSchema,
 });
 
+export const columnLabelSchema = z
+  .string()
+  .trim()
+  .min(1, "Column name is required")
+  .max(50, "Column name must be at most 50 characters");
+
+export const columnLabelsSchema = z.object({
+  applied: columnLabelSchema,
+  screening: columnLabelSchema,
+  interview: columnLabelSchema,
+  offer: columnLabelSchema,
+  rejected: columnLabelSchema,
+});
+
+export const updateColumnLabelsInputSchema = z.object({
+  labels: columnLabelsSchema,
+});
+
+export const columnLabelsResponseSchema = z.object({
+  labels: columnLabelsSchema,
+});
+
 export const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -138,6 +179,11 @@ export type ReorderApplicationsInput = z.infer<
   typeof reorderApplicationsInputSchema
 >;
 export type AddNoteInput = z.infer<typeof addNoteInputSchema>;
+export type ColumnLabels = z.infer<typeof columnLabelsSchema>;
+export type UpdateColumnLabelsInput = z.infer<
+  typeof updateColumnLabelsInputSchema
+>;
+export type ColumnLabelsResponse = z.infer<typeof columnLabelsResponseSchema>;
 export type ApplicationsResponse = z.infer<typeof applicationsResponseSchema>;
 export type ApplicationResponse = z.infer<typeof applicationResponseSchema>;
 export type NoteResponse = z.infer<typeof noteResponseSchema>;

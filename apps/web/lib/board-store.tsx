@@ -18,6 +18,7 @@ import {
   useReorderApplications,
   useSetStatus,
   useUpdateApplication,
+  useUploadCv,
 } from "./applications-api";
 import {
   BoardContext,
@@ -72,6 +73,7 @@ export function BoardProvider({
   const addNoteMutation = useAddNote();
   const deleteNoteMutation = useDeleteNote();
   const reorderMutation = useReorderApplications();
+  const uploadCvMutation = useUploadCv();
 
   const [search, setSearch] = useState("");
   const [optimistic, setOptimistic] = useState<Optimistic | null>(null);
@@ -128,15 +130,34 @@ export function BoardProvider({
   );
 
   const addApplication = useCallback(
-    (draft: ApplicationDraft) => {
+    (draft: ApplicationDraft, cvFile?: File | null) => {
       addApplicationMutation.mutate(draft, {
-        onSuccess: () =>
-          report({ tone: "success", message: "Application added" }),
+        onSuccess: (created) => {
+          if (cvFile) {
+            uploadCvMutation.mutate(
+              { id: created.id, file: cvFile },
+              {
+                onSuccess: () =>
+                  report({
+                    tone: "success",
+                    message: "Application added with CV",
+                  }),
+                onError: (error) =>
+                  reportFailure(
+                    error,
+                    "Application added, but the CV did not upload",
+                  ),
+              },
+            );
+          } else {
+            report({ tone: "success", message: "Application added" });
+          }
+        },
         onError: (error) =>
           reportFailure(error, "Could not add the application"),
       });
     },
-    [addApplicationMutation, report, reportFailure],
+    [addApplicationMutation, uploadCvMutation, report, reportFailure],
   );
 
   // Writes a card in place. A status change is a move, not a copy, so the card cannot end up listed under two columns.
@@ -177,7 +198,7 @@ export function BoardProvider({
   );
 
   const updateApplication = useCallback(
-    (id: string, draft: ApplicationDraft) => {
+    (id: string, draft: ApplicationDraft, cvFile?: File | null) => {
       // Show the edit immediately, then let the server have its say. A
       // refetch replaces it with the saved version.
       setOptimistic({
@@ -191,6 +212,7 @@ export function BoardProvider({
             jobUrl: draft.jobUrl.trim(),
             location: draft.location.trim(),
             salary: draft.salary.trim(),
+            jobDescription: draft.jobDescription.trim(),
             appliedAt: new Date(draft.appliedAt).toISOString(),
           },
           draft.status,
@@ -199,8 +221,27 @@ export function BoardProvider({
       updateApplicationMutation.mutate(
         { id, draft },
         {
-          onSuccess: () =>
-            report({ tone: "success", message: "Application updated" }),
+          onSuccess: () => {
+            if (cvFile) {
+              uploadCvMutation.mutate(
+                { id, file: cvFile },
+                {
+                  onSuccess: () =>
+                    report({
+                      tone: "success",
+                      message: "Application updated with CV",
+                    }),
+                  onError: (error) =>
+                    reportFailure(
+                      error,
+                      "Changes saved, but the CV did not upload",
+                    ),
+                },
+              );
+            } else {
+              report({ tone: "success", message: "Application updated" });
+            }
+          },
           onError: (error) =>
             reportFailure(error, "Could not save the changes"),
         },
@@ -211,6 +252,7 @@ export function BoardProvider({
       writeApplication,
       serverBoard,
       updateApplicationMutation,
+      uploadCvMutation,
       report,
       reportFailure,
     ],
@@ -458,11 +500,13 @@ export function BoardProvider({
       return (
         application.company.toLowerCase().includes(searchQuery) ||
         application.role.toLowerCase().includes(searchQuery) ||
-        application.location.toLowerCase().includes(searchQuery)
+        application.location.toLowerCase().includes(searchQuery) ||
+        application.jobDescription.toLowerCase().includes(searchQuery)
       );
     };
     return {
       applied: board.columns.applied.filter(match),
+      screening: board.columns.screening.filter(match),
       interview: board.columns.interview.filter(match),
       offer: board.columns.offer.filter(match),
       rejected: board.columns.rejected.filter(match),

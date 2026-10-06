@@ -7,7 +7,13 @@ import { IconDollar, IconMapPin } from "@/components/icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { NoteIcon, InboxIcon } from "@hugeicons/core-free-icons";
 
-const STATUSES: Status[] = ["applied", "interview", "offer", "rejected"];
+const STATUSES: Status[] = [
+  "applied",
+  "screening",
+  "interview",
+  "offer",
+  "rejected",
+];
 
 const DEMO_APPLICATIONS: Application[] = [
   {
@@ -17,6 +23,10 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://stripe.com/jobs",
     location: "San Francisco, CA",
     salary: "$180K–$250K",
+    jobDescription: "",
+    cvFileName: "",
+    cvMime: "",
+    cvSize: 0,
     status: "applied",
     appliedAt: "2024-11-15",
     lastActivityAt: "2024-11-15",
@@ -29,7 +39,11 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://linear.app/careers",
     location: "Remote (US)",
     salary: "$200K–$280K",
-    status: "applied",
+    jobDescription: "",
+    cvFileName: "linear-cv.pdf",
+    cvMime: "application/pdf",
+    cvSize: 42000,
+    status: "screening",
     appliedAt: "2024-11-10",
     lastActivityAt: "2024-11-10",
     notes: [{ id: "2", body: "Love their product philosophy", createdAt: "2024-11-10" }],
@@ -41,6 +55,10 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://vercel.com/careers",
     location: "San Francisco, CA",
     salary: "$170K–$240K",
+    jobDescription: "",
+    cvFileName: "",
+    cvMime: "",
+    cvSize: 0,
     status: "interview",
     appliedAt: "2024-11-05",
     lastActivityAt: "2024-11-20",
@@ -56,6 +74,10 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://notion.so/careers",
     location: "New York, NY",
     salary: "$160K–$220K",
+    jobDescription: "",
+    cvFileName: "",
+    cvMime: "",
+    cvSize: 0,
     status: "offer",
     appliedAt: "2024-10-28",
     lastActivityAt: "2024-11-18",
@@ -71,6 +93,10 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://figma.com/careers",
     location: "Remote",
     salary: "$190K–$260K",
+    jobDescription: "",
+    cvFileName: "",
+    cvMime: "",
+    cvSize: 0,
     status: "rejected",
     appliedAt: "2024-10-20",
     lastActivityAt: "2024-11-01",
@@ -83,6 +109,10 @@ const DEMO_APPLICATIONS: Application[] = [
     jobUrl: "https://ramp.com/careers",
     location: "New York, NY",
     salary: "$170K–$230K",
+    jobDescription: "",
+    cvFileName: "",
+    cvMime: "",
+    cvSize: 0,
     status: "rejected",
     appliedAt: "2024-10-15",
     lastActivityAt: "2024-10-30",
@@ -198,7 +228,7 @@ export function DemoBoard() {
   return (
     <div
       data-testid="demo-board"
-      className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
       role="region"
       aria-label="Demo Kanban board"
     >

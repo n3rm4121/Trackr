@@ -7,9 +7,11 @@ import {
 import {
   applicationResponseSchema,
   applicationsResponseSchema,
+  columnLabelsResponseSchema,
   noteResponseSchema,
   type AddNoteInput,
   type Application as ApiApplication,
+  type ColumnLabels,
   type CreateApplicationInput,
   type Note as ApiNote,
   type ReorderApplicationsInput,
@@ -52,7 +54,13 @@ async function getBoard(): Promise<BoardState> {
 // Folds the API's flat list into the columns the board renders.
 export function toBoardState(applications: ApiApplication[]): BoardState {
   const board: BoardState = {
-    columns: { applied: [], interview: [], offer: [], rejected: [] },
+    columns: {
+      applied: [],
+      screening: [],
+      interview: [],
+      offer: [],
+      rejected: [],
+    },
     applications: {},
   };
 
@@ -118,6 +126,7 @@ export function useUpdateApplication() {
         jobUrl: draft.jobUrl,
         location: draft.location,
         salary: draft.salary,
+        jobDescription: draft.jobDescription,
         status: draft.status,
         appliedAt: new Date(draft.appliedAt).toISOString(),
       } satisfies UpdateApplicationInput);
@@ -216,6 +225,7 @@ export function useReorderApplications() {
       const payload: ReorderApplicationsInput = {
         columns: {
           applied: columns.applied.map(toApiId),
+          screening: columns.screening.map(toApiId),
           interview: columns.interview.map(toApiId),
           offer: columns.offer.map(toApiId),
           rejected: columns.rejected.map(toApiId),
@@ -239,9 +249,76 @@ function toCreateInput(draft: ApplicationDraft): CreateApplicationInput {
     jobUrl: draft.jobUrl,
     location: draft.location,
     salary: draft.salary,
+    jobDescription: draft.jobDescription,
     status: draft.status,
     appliedAt: new Date(draft.appliedAt).toISOString(),
   };
+}
+
+export const columnLabelKeys = {
+  all: ["column-labels"] as const,
+};
+
+export function useColumnLabels() {
+  return useQuery({
+    queryKey: columnLabelKeys.all,
+    queryFn: async (): Promise<ColumnLabels> => {
+      const { data } = await apiClient.get("/applications/columns/labels");
+      return columnLabelsResponseSchema.parse(data).labels;
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateColumnLabels() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (labels: ColumnLabels) => {
+      const { data } = await apiClient.put("/applications/columns/labels", {
+        labels,
+      });
+      return columnLabelsResponseSchema.parse(data).labels;
+    },
+    onSuccess: (labels) => {
+      queryClient.setQueryData(columnLabelKeys.all, labels);
+    },
+  });
+}
+
+export function useUploadCv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const form = new FormData();
+      form.append("cv", file);
+      const { data } = await apiClient.post(`/applications/${id}/cv`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const { application } = applicationResponseSchema.parse(data);
+      return fromApiApplication(application);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: applicationKeys.all });
+    },
+  });
+}
+
+export function useDeleteCv() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.delete(`/applications/${id}/cv`);
+      const { application } = applicationResponseSchema.parse(data);
+      return fromApiApplication(application);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: applicationKeys.all });
+    },
+  });
+}
+
+export function cvDownloadUrl(id: string): string {
+  return `/api/applications/${id}/cv`;
 }
 
 export type { ApiApplication, ApiNote, Application, Note };

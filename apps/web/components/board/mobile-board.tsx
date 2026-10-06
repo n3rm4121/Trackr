@@ -21,12 +21,14 @@ import { STATUSES, STATUS_META, type Status } from "@/lib/applications";
 export function MobileBoard({
   active,
   counts,
+  titles,
   onActiveChange,
   onAdd,
   renderColumn,
 }: {
   active: Status;
   counts: Record<Status, number>;
+  titles?: Record<Status, string>;
   onActiveChange: (status: Status) => void;
   onAdd: (status: Status) => void;
   renderColumn: (status: Status) => React.ReactNode;
@@ -55,6 +57,7 @@ export function MobileBoard({
         {STATUSES.map((status) => {
           const meta = STATUS_META[status];
           const selected = status === active;
+          const title = titles?.[status] ?? meta.title;
           return (
             <button
               key={status}
@@ -77,7 +80,7 @@ export function MobileBoard({
                 aria-hidden
                 className={cn("size-2 rounded-full", meta.dot)}
               />
-              {meta.title}
+              {title}
               <span className="bg-muted text-muted-foreground rounded-full px-1.5 py-0.5 text-[11px] font-medium tabular-nums">
                 {counts[status]}
               </span>
@@ -118,7 +121,7 @@ export function MobileBoard({
             key={status}
             id={`mobile-panel-${status}`}
             role="tabpanel"
-            aria-label={STATUS_META[status].title}
+            aria-label={titles?.[status] ?? STATUS_META[status].title}
             className="w-full shrink-0 snap-start [&>section]:h-full [&>section]:rounded-none [&>section]:border-0"
           >
             {renderColumn(status)}
@@ -128,7 +131,7 @@ export function MobileBoard({
 
       <Button
         type="button"
-        aria-label={`Add application to ${STATUS_META[active].title}`}
+        aria-label={`Add application to ${titles?.[active] ?? STATUS_META[active].title}`}
         onClick={() => onAdd(active)}
         className="absolute right-4 bottom-4 z-20 size-14 rounded-full shadow-lg shadow-black/25"
       >

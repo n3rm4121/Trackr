@@ -11,7 +11,8 @@
     "dev": "pnpm --filter @trackr/shared build && pnpm --parallel --filter @trackr/shared --filter web --filter api run dev",
     "build": "pnpm -r build",
     "dev:web": "pnpm --filter @trackr/shared build && pnpm --filter web dev",
-    "dev:api": "pnpm --filter @trackr/shared build && pnpm --filter api dev"
+    "dev:api": "pnpm --filter @trackr/shared build && pnpm --filter api dev",
+    "db:seed": "pnpm --filter api db:seed"
   },
   "keywords": [],
   "author": "",

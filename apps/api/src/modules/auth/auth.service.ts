@@ -1,4 +1,5 @@
 import { AuthRepository } from "./auth.repository.js";
+import type { ApplicationRepository } from "../applications/application.repository.js";
 import {
   generateAccessToken,
   generatePasswordResetToken,
@@ -7,6 +8,10 @@ import {
   hashRefreshToken,
 } from "../../utils/token.js";
 import bcrypt from "bcryptjs";
+import {
+  STARTER_APPLICATION,
+  STARTER_NOTE,
+} from "../../db/starter-application.js";
 import {
   badCredentials,
   emailAlreadyRegistered,
@@ -23,7 +28,13 @@ function publicUser(user: { id: number; email: string; name: string }) {
 }
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository) {}
+  constructor(
+    private authRepository: AuthRepository,
+    private applicationRepository?: Pick<
+      ApplicationRepository,
+      "create" | "addNote"
+    >,
+  ) {}
 
   async register(input: { email: string; password: string; name: string }) {
     const existing = await this.authRepository.findUserByEmail(input.email);
@@ -36,6 +47,8 @@ export class AuthService {
     if (!user) {
       throw new Error("Failed to create user");
     }
+
+    await this.seedStarterApplication(user.id);
 
     return publicUser(user);
   }
@@ -117,6 +130,26 @@ export class AuthService {
   async getCurrentUser(userId: number) {
     const user = await this.authRepository.findUserById(userId);
     return user ? publicUser(user) : undefined;
+  }
+
+  /**
+   * One example card in Applied so a fresh board is never blank. Best-effort:
+   * the account already exists at this point, so a seed failure is logged
+   * rather than failing signup.
+   */
+  private async seedStarterApplication(userId: number): Promise<void> {
+    if (!this.applicationRepository) {
+      return;
+    }
+    try {
+      const card = await this.applicationRepository.create(userId, {
+        ...STARTER_APPLICATION,
+        appliedAt: new Date(),
+      });
+      await this.applicationRepository.addNote(userId, card.id, STARTER_NOTE);
+    } catch (error) {
+      console.error("failed to seed starter application", error);
+    }
   }
 
   // Issues a reset link, or quietly does nothing when no account matches.
