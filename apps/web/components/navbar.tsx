@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { currentUserQuery, useLogout } from "@/lib/auth";
+import { useTheme } from "@/lib/use-theme";
+import { IconMoon, IconSun } from "@/components/icons";
+import { GithubStars } from "@/components/github-stars";
 import { config } from "@/lib/config";
 
 export function PaperclipIcon({
@@ -36,6 +39,12 @@ export function Navbar() {
   const { data: userData } = useQuery(currentUserQuery());
   const userName = userData?.user?.name;
   const logout = useLogout();
+  const { theme, toggle } = useTheme();
+  // The board routes own their theme controls (toolbar + menus), so the
+  // navbar stays out of their way there.
+  const hideTheme =
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/stats");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -94,6 +103,26 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            {hideTheme ? null : (
+              <>
+                <GithubStars compact />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={toggle}
+                  aria-label={
+                    theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+                  }
+                >
+                  {theme === "dark" ? (
+                    <IconSun className="size-4" aria-hidden />
+                  ) : (
+                    <IconMoon className="size-4" aria-hidden />
+                  )}
+                </Button>
+              </>
+            )}
             {userName ? (
               <>
               <Link to="/dashboard">
