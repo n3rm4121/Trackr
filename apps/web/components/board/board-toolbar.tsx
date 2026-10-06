@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CancelCircleIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { config } from "@/lib/config";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,7 @@ import {
   IconSun,
 } from "@/components/icons";
 import { initials } from "@/lib/date";
+import { PaperclipIcon } from "@/components/navbar";
 import { useTheme } from "@/lib/use-theme";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { StatStrip } from "./stat-strip";
@@ -96,6 +99,14 @@ export function BoardToolbar({
     <header className="shrink-0 bg-background/95 backdrop-blur-sm">
       <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
         <div className="mr-auto flex min-w-0 items-center gap-2 truncate text-sm font-semibold">
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-heading font-semibold text-lg text-foreground hover:opacity-80 transition-opacity"
+            aria-label={`${config.site.name} - Home`}
+          >
+            <PaperclipIcon className="w-6 h-6 text-accent" />
+            <span className="hidden sm:block">{config.site.name}</span>
+          </Link>
           {desktop ? (
             <StatStrip
               total={stats.total}
@@ -128,7 +139,7 @@ export function BoardToolbar({
         <Button
           type="button"
           size="sm"
-          className="hidden sm:inline-flex bg-accent text-accent-foreground hover:brightness-95 active:brightness-105"
+          className="hidden sm:inline-flex bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground/90 font-medium"
           onClick={onAdd}
         >
           <IconAdd className="size-4" aria-hidden />
@@ -179,6 +190,38 @@ export function BoardToolbar({
           )}
         </Button>
 
+        {desktop && userName && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="rounded-full outline-offset-2"
+                />
+              }
+            >
+              <Avatar className="size-7">
+                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                  {initials(userName ?? "?")}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <p className="truncate px-2 py-1.5 text-sm font-medium">
+                {userName}
+              </p>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onLogout}
+                className="font-medium text-destructive"
+              >
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         {!desktop && userName && (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -217,10 +260,7 @@ export function BoardToolbar({
                 <IconChartBar className="size-4" aria-hidden />
                 Stats
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={onExport}
-                disabled={stats.total === 0}
-              >
+              <DropdownMenuItem onClick={onExport} disabled={stats.total === 0}>
                 <IconDownload className="size-4" aria-hidden />
                 Export CSV
               </DropdownMenuItem>
@@ -233,33 +273,6 @@ export function BoardToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
-        {/* {desktop && userName && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  aria-label="Account menu"
-                  className="rounded-full outline-offset-2"
-                />
-              }
-            >
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
-                  {initials(userName ?? "?")}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <p className="truncate px-2 py-1.5 text-sm font-medium">{userName}</p>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onLogout} className="font-medium text-destructive">
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            </DropdownMenu>
-        )} */}
       </div>
 
       {searchOpen && !desktop ? (

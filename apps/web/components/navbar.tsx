@@ -1,13 +1,22 @@
 "use client";
 
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { currentUserQuery, useLogout } from "@/lib/auth";
 import { useTheme } from "@/lib/use-theme";
 import { IconMoon, IconSun } from "@/components/icons";
 import { GithubStars } from "@/components/github-stars";
+import { initials } from "@/lib/date";
 import { config } from "@/lib/config";
 
 export function PaperclipIcon({
@@ -35,6 +44,7 @@ export function PaperclipIcon({
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const { data: userData } = useQuery(currentUserQuery());
   const userName = userData?.user?.name;
@@ -112,7 +122,9 @@ export function Navbar() {
                   size="icon-sm"
                   onClick={toggle}
                   aria-label={
-                    theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+                    theme === "dark"
+                      ? "Switch to light mode"
+                      : "Switch to dark mode"
                   }
                 >
                   {theme === "dark" ? (
@@ -124,25 +136,54 @@ export function Navbar() {
               </>
             )}
             {userName ? (
-              <>
-              <Link to="/dashboard">
-                <Button size="sm" className="text-sm font-medium bg-accent text-accent-foreground hover:brightness-95 active:brightness-105">
-                  Dashboard
-                </Button>
-              </Link>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-sm font-medium"
-                onClick={() => logout.mutate()}
-              >
-                Log out
-              </Button>
-            </>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label="Account menu"
+                      className="rounded-full outline-offset-2"
+                    />
+                  }
+                >
+                  <Avatar className="size-8">
+                    <AvatarFallback className="bg-accent/10 text-accent text-xs font-semibold">
+                      {initials(userName)}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <p className="truncate px-2 py-1.5 text-sm font-medium">
+                    {userName}
+                  </p>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => void navigate({ to: "/dashboard" })}
+                  >
+                    My board
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => void navigate({ to: "/stats" })}
+                  >
+                    Stats
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => logout.mutate()}
+                    className="font-medium text-destructive"
+                  >
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm" className="text-sm font-medium">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-sm font-medium"
+                  >
                     Log in
                   </Button>
                 </Link>

@@ -3,10 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, pool } from "./index.js";
 import { usersTable } from "./schema.js";
 import { ApplicationRepository } from "../modules/applications/application.repository.js";
-import {
-  STARTER_APPLICATION,
-  STARTER_NOTE,
-} from "./starter-application.js";
+import { STARTER_APPLICATION, STARTER_NOTE } from "./starter-application.js";
 
 /**
  * Fills an existing account with the example card new signups start with.

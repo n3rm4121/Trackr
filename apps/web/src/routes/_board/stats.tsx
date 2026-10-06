@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { IconArrowRight, IconClock, IconKanban } from "@/components/icons";
+import { PaperclipIcon } from "@/components/navbar";
 import { useBoard } from "@/lib/use-board";
 import { STATUS_META } from "@/lib/applications";
 import { useColumnTitles } from "@/lib/use-column-titles";
@@ -34,7 +35,15 @@ function Stats() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center justify-end gap-2 border-b px-3 py-2 sm:px-4 bg-background/95 backdrop-blur-sm">
+      <header className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2 sm:px-4 bg-background/95 backdrop-blur-sm">
+        <Link
+          to="/"
+          aria-label="Trackr home"
+          className="rounded transition-opacity hover:opacity-80"
+        >
+          <PaperclipIcon className="size-5 text-accent" />
+        </Link>
+        <div className="flex items-center gap-2">
         <Button
           type="button"
           size="sm"
@@ -62,6 +71,7 @@ function Stats() {
             <HugeiconsIcon icon={Moon01Icon} className="size-4" aria-hidden />
           )}
         </Button>
+        </div>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4">
