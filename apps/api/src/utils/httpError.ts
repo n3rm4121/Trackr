@@ -29,6 +29,13 @@ export const invalidResetToken = () =>
     "INVALID_RESET_TOKEN",
   );
 
+export const invalidCurrentPassword = () =>
+  new HttpError(
+    401,
+    "Current password is incorrect",
+    "INVALID_CURRENT_PASSWORD",
+  );
+
 /**
  * A card that is missing and a card that belongs to somebody else get the same
  * answer, so a caller cannot learn whether an id exists by watching for a 403.

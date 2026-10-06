@@ -8,6 +8,7 @@ import {
   authResponseSchema,
   passwordActionResponseSchema,
   type AuthResponse,
+  type ChangePasswordInput,
   type ForgotPasswordInput,
   type LoginInput,
   type PasswordActionResponse,
@@ -129,6 +130,25 @@ export function useResetPassword() {
       postPasswordAction("/auth/reset-password", input),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: authKeys.currentUser });
+    },
+  });
+}
+
+/**
+ * Signed-in password change. The session stays alive: this answers 401 only
+ * when the current password is wrong, and validation issues otherwise.
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: async (
+      input: ChangePasswordInput,
+    ): Promise<PasswordActionResponse> => {
+      try {
+        const { data } = await apiClient.patch("/auth/password", input);
+        return passwordActionResponseSchema.parse(data);
+      } catch (error) {
+        throw toApiError(error);
+      }
     },
   });
 }

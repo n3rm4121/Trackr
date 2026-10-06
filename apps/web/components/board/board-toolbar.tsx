@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { CancelCircleIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ export function BoardToolbar({
   const { theme, toggle } = useTheme();
   const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
   const [searchOpen, setSearchOpen] = useState(false);
+  const navigate = useNavigate();
 
   const field = (id: string, autoFocus: boolean) => (
     <div className="relative">
@@ -213,6 +214,12 @@ export function BoardToolbar({
               </p>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                onClick={() => void navigate({ to: "/settings" })}
+              >
+                Change password
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
                 onClick={onLogout}
                 className="font-medium text-destructive"
               >
@@ -263,6 +270,11 @@ export function BoardToolbar({
               <DropdownMenuItem onClick={onExport} disabled={stats.total === 0}>
                 <IconDownload className="size-4" aria-hidden />
                 Export CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => void navigate({ to: "/settings" })}
+              >
+                Change password
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onLogout}

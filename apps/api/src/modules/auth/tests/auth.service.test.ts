@@ -283,8 +283,71 @@ describe("AuthService", () => {
     });
   });
 
-  describe("getCurrentUser", () => {
-    it("returns the user without the password", async () => {
+  describe("changePassword", () => {
+    const NEW_PASSWORD = "brand-new-password";
+
+    beforeEach(async () => {
+      await registerUser();
+    });
+
+    it("changes the password when the current one is correct", async () => {
+      const created = repo.users[0]!;
+
+      await service.changePassword(created.id, {
+        currentPassword: CREDENTIALS.password,
+        newPassword: NEW_PASSWORD,
+      });
+
+      await expect(
+        service.login({ email: CREDENTIALS.email, password: NEW_PASSWORD }),
+      ).resolves.toBeDefined();
+      await expect(
+        service.login({ email: CREDENTIALS.email, password: CREDENTIALS.password }),
+      ).rejects.toMatchObject({ status: 401 });
+    });
+
+    it("stores the new password hashed, not in the clear", async () => {
+      const created = repo.users[0]!;
+
+      await service.changePassword(created.id, {
+        currentPassword: CREDENTIALS.password,
+        newPassword: NEW_PASSWORD,
+      });
+
+      const stored = repo.users[0]!.password;
+      expect(stored).not.toBe(NEW_PASSWORD);
+      await expect(bcrypt.compare(NEW_PASSWORD, stored)).resolves.toBe(true);
+    });
+
+    it("rejects a wrong current password and leaves the old one working", async () => {
+      const created = repo.users[0]!;
+
+      await expect(
+        service.changePassword(created.id, {
+          currentPassword: "wrong-password",
+          newPassword: NEW_PASSWORD,
+        }),
+      ).rejects.toMatchObject({
+        status: 401,
+        code: "INVALID_CURRENT_PASSWORD",
+      });
+
+      await expect(
+        service.login({ email: CREDENTIALS.email, password: CREDENTIALS.password }),
+      ).resolves.toBeDefined();
+    });
+
+    it("answers 401 for a user that no longer exists", async () => {
+      await expect(
+        service.changePassword(9999, {
+          currentPassword: "anything",
+          newPassword: NEW_PASSWORD,
+        }),
+      ).rejects.toMatchObject({ status: 401 });
+    });
+  });
+
+  describe("getCurrentUser", () => {    it("returns the user without the password", async () => {
       const created = await registerUser();
 
       const user = await service.getCurrentUser(created.id);

@@ -18,6 +18,7 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as BoardDashboardRouteImport } from './routes/_board/dashboard'
+import { Route as BoardSettingsRouteImport } from './routes/_board/settings'
 import { Route as BoardStatsRouteImport } from './routes/_board/stats'
 
 const IndexRoute = IndexRouteImport.update({
@@ -63,6 +64,11 @@ const BoardDashboardRoute = BoardDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => BoardRoute,
 } as any)
+const BoardSettingsRoute = BoardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => BoardRoute,
+} as any)
 const BoardStatsRoute = BoardStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/dashboard': typeof BoardDashboardRoute
+  '/settings': typeof BoardSettingsRoute
   '/stats': typeof BoardStatsRoute
 }
 export interface FileRoutesByTo {
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/signup': typeof AuthSignupRoute
   '/dashboard': typeof BoardDashboardRoute
+  '/settings': typeof BoardSettingsRoute
   '/stats': typeof BoardStatsRoute
 }
 export interface FileRoutesById {
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_board/dashboard': typeof BoardDashboardRoute
+  '/_board/settings': typeof BoardSettingsRoute
   '/_board/stats': typeof BoardStatsRoute
 }
 export interface FileRouteTypes {
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/dashboard'
+    | '/settings'
     | '/stats'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/dashboard'
+    | '/settings'
     | '/stats'
   id:
     | '__root__'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/signup'
     | '/_board/dashboard'
+    | '/_board/settings'
     | '/_board/stats'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BoardDashboardRouteImport
       parentRoute: typeof BoardRoute
     }
+    '/_board/settings': {
+      id: '/_board/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof BoardSettingsRouteImport
+      parentRoute: typeof BoardRoute
+    }
     '/_board/stats': {
       id: '/_board/stats'
       path: '/stats'
@@ -237,11 +256,13 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface BoardRouteChildren {
   BoardDashboardRoute: typeof BoardDashboardRoute
+  BoardSettingsRoute: typeof BoardSettingsRoute
   BoardStatsRoute: typeof BoardStatsRoute
 }
 
 const BoardRouteChildren: BoardRouteChildren = {
   BoardDashboardRoute: BoardDashboardRoute,
+  BoardSettingsRoute: BoardSettingsRoute,
   BoardStatsRoute: BoardStatsRoute,
 }
 

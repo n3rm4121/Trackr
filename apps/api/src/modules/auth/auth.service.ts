@@ -15,6 +15,7 @@ import {
 import {
   badCredentials,
   emailAlreadyRegistered,
+  invalidCurrentPassword,
   invalidRefreshToken,
   invalidResetToken,
 } from "../../utils/httpError.js";
@@ -130,6 +131,24 @@ export class AuthService {
   async getCurrentUser(userId: number) {
     const user = await this.authRepository.findUserById(userId);
     return user ? publicUser(user) : undefined;
+  }
+
+  async changePassword(
+    userId: number,
+    input: { currentPassword: string; newPassword: string },
+  ) {
+    const user = await this.authRepository.findUserById(userId);
+    if (!user) {
+      throw badCredentials();
+    }
+
+    const valid = await bcrypt.compare(input.currentPassword, user.password);
+    if (!valid) {
+      throw invalidCurrentPassword();
+    }
+
+    const password = await bcrypt.hash(input.newPassword, 10);
+    await this.authRepository.updateUserPassword(user.id, password);
   }
 
   /**

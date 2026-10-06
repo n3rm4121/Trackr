@@ -5,6 +5,7 @@ import {
   loginInputSchema,
   registerInputSchema,
   authResponseSchema,
+  changePasswordInputSchema,
   forgotPasswordInputSchema,
   resetPasswordInputSchema,
   passwordActionResponseSchema,
@@ -143,6 +144,47 @@ describe("resetPasswordInputSchema", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("Reset token is required");
+  });
+});
+
+describe("changePasswordInputSchema", () => {
+  it("accepts a current password and a strong new one", () => {
+    const result = changePasswordInputSchema.safeParse({
+      currentPassword: "correct-horse",
+      newPassword: "brand-new-password",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("enforces the same strength rules as registration", () => {
+    const result = changePasswordInputSchema.safeParse({
+      currentPassword: "correct-horse",
+      newPassword: "short",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("refuses a new password identical to the current one", () => {
+    const result = changePasswordInputSchema.safeParse({
+      currentPassword: "same-password-1",
+      newPassword: "same-password-1",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe(
+      "New password must be different from the current one",
+    );
+  });
+
+  it("requires the current password so the check cannot be skipped", () => {
+    const result = changePasswordInputSchema.safeParse({
+      currentPassword: "",
+      newPassword: "brand-new-password",
+    });
+
+    expect(result.success).toBe(false);
   });
 });
 

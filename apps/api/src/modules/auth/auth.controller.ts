@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import {
+  changePasswordInputSchema,
   registerInputSchema,
   loginInputSchema,
   forgotPasswordInputSchema,
@@ -117,5 +118,15 @@ export class AuthController {
 
     await this.authService.resetPassword(input);
     res.json({ message: "Your password has been reset. You can log in now" });
+  };
+
+  changePassword = async (req: Request, res: Response) => {
+    const input = parseBody(changePasswordInputSchema, req, res);
+    if (!input) {
+      return;
+    }
+
+    await this.authService.changePassword(req.user!.id, input);
+    res.json({ message: "Your password has been changed" });
   };
 }

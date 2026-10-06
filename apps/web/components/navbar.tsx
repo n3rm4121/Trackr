@@ -167,6 +167,11 @@ export function Navbar() {
                   >
                     Stats
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => void navigate({ to: "/settings" })}
+                  >
+                    Change password
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => logout.mutate()}

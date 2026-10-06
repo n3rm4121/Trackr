@@ -13,5 +13,6 @@ router.post("/reset-password", authController.resetPassword);
 
 // requires auth
 router.get("/me", requireAuth, authController.getCurrentUser);
+router.patch("/password", requireAuth, authController.changePassword);
 
 export { router as authRouter };

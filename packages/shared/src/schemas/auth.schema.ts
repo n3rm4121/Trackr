@@ -31,6 +31,16 @@ export const resetPasswordInputSchema = z.object({
   password: passwordSchema,
 });
 
+export const changePasswordInputSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordSchema,
+  })
+  .refine((value) => value.newPassword !== value.currentPassword, {
+    message: "New password must be different from the current one",
+    path: ["newPassword"],
+  });
+
 // Both endpoints answer with a message and no user data, so nothing about
 // whether an email has an account leaks back to the caller.
 export const passwordActionResponseSchema = z.object({
@@ -42,4 +52,5 @@ export type LoginInput = z.infer<typeof loginInputSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordInputSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordInputSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 export type PasswordActionResponse = z.infer<typeof passwordActionResponseSchema>;

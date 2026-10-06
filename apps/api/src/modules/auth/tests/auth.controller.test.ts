@@ -34,6 +34,7 @@ describe("AuthController", () => {
       getCurrentUser: vi.fn(),
       requestPasswordReset: vi.fn(),
       resetPassword: vi.fn(),
+      changePassword: vi.fn(),
     } as unknown as AuthService;
 
     controller = new AuthController();
@@ -394,6 +395,52 @@ describe("AuthController", () => {
       await expect(
         controller.resetPassword(mockReq as Request, mockRes as Response),
       ).rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
+    });
+  });
+
+  describe("changePassword", () => {
+    it("should pass the signed-in user's id and the parsed body to the service", async () => {
+      vi.mocked(serviceInstance.changePassword).mockResolvedValueOnce(
+        undefined as any,
+      );
+      mockReq = {
+        user: { id: 42 } as any,
+        body: { currentPassword: "correct-horse", newPassword: "brand-new-password" },
+      };
+
+      await controller.changePassword(mockReq as Request, mockRes as Response);
+
+      expect(serviceInstance.changePassword).toHaveBeenCalledWith(42, {
+        currentPassword: "correct-horse",
+        newPassword: "brand-new-password",
+      });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: "Your password has been changed",
+      });
+    });
+
+    it("should return 400 and not call the service when the new password matches", async () => {
+      mockReq = {
+        user: { id: 42 } as any,
+        body: { currentPassword: "same-password-1", newPassword: "same-password-1" },
+      };
+
+      await controller.changePassword(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(serviceInstance.changePassword).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 with per-field issues when the current password is missing", async () => {
+      mockReq = {
+        user: { id: 42 } as any,
+        body: { newPassword: "brand-new-password" },
+      };
+
+      await controller.changePassword(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(serviceInstance.changePassword).not.toHaveBeenCalled();
     });
   });
 });
