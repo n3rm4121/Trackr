@@ -3,9 +3,9 @@ import type { ApplicationRepository } from "../applications/application.reposito
 import {
   generateAccessToken,
   generatePasswordResetToken,
-  generateRefreshToken,
   hashPasswordResetToken,
-  hashRefreshToken,
+  signRefreshToken,
+  verifyRefreshToken,
 } from "../../utils/token.js";
 import bcrypt from "bcryptjs";
 import {
@@ -54,10 +54,9 @@ export class AuthService {
     return publicUser(user);
   }
 
-  // access and raw refresh token are returned to the client, while the hashed refresh token in stored in db.
-  // when the client wants to refresh the access token, they send the raw refresh token, which is hashed and compared to the stored hash in the db.
-  // so that if the db is compromised, the attacker cannot use the hashed refresh token to get a new access token.
-
+  // Both tokens travel in httpOnly cookies (set by the controller), never in
+  // the JSON body, so JavaScript cannot read them. The refresh token is a
+  // self-contained signed JWT: no session row is created.
   async login(input: { email: string; password: string }) {
     const user = await this.authRepository.findUserByEmail(input.email);
     if (!user) {
@@ -70,62 +69,36 @@ export class AuthService {
     }
 
     const accessToken = generateAccessToken(user.id);
-    const refresh = generateRefreshToken();
-    await this.authRepository.createSession({
-      userId: user.id,
-      tokenHash: refresh.hash,
-      expiresAt: refresh.expiresAt,
-    });
+    const refreshToken = signRefreshToken(user.id, user.tokenVersion);
 
-    // Tokens are returned to the controller, which sets them as httpOnly
-    // cookies. They are deliberately absent from the JSON body so they never
-    // reach JavaScript or a token in localStorage.
     return {
       accessToken,
-      refreshToken: refresh.raw,
+      refreshToken,
       user: publicUser(user),
     };
   }
 
   async refresh(refreshToken: string) {
-    const tokenHash = hashRefreshToken(refreshToken);
-    const session = await this.authRepository.findSessionByTokenHash(tokenHash);
-    if (!session) {
+    let payload: { userId: number; tokenVersion: number };
+    try {
+      payload = verifyRefreshToken(refreshToken);
+    } catch {
       throw invalidRefreshToken();
     }
 
-    if (session.expiresAt.getTime() <= Date.now()) {
-      await this.authRepository.deleteSessionByTokenHash(tokenHash);
+    const user = await this.authRepository.findUserById(payload.userId);
+    // Unknown user, or the version moved on (password change/reset retired
+    // this token): either way it no longer refreshes.
+    if (!user || user.tokenVersion !== payload.tokenVersion) {
       throw invalidRefreshToken();
     }
 
-    const user = await this.authRepository.findUserById(session.userId);
-    if (!user) {
-      await this.authRepository.deleteSessionByTokenHash(tokenHash);
-      throw invalidRefreshToken();
-    }
-
-    await this.authRepository.deleteSessionByTokenHash(tokenHash);
-
-    const accessToken = generateAccessToken(user.id);
-    const next = generateRefreshToken();
-    await this.authRepository.createSession({
-      userId: user.id,
-      tokenHash: next.hash,
-      expiresAt: next.expiresAt,
-    });
-
+    // Sliding lifetime: every refresh mints a fresh pair with a new jti.
     return {
-      accessToken,
-      refreshToken: next.raw,
+      accessToken: generateAccessToken(user.id),
+      refreshToken: signRefreshToken(user.id, user.tokenVersion),
       user: publicUser(user),
     };
-  }
-
-  async logout(refreshToken: string) {
-    await this.authRepository.deleteSessionByTokenHash(
-      hashRefreshToken(refreshToken),
-    );
   }
 
   async getCurrentUser(userId: number) {
@@ -149,6 +122,9 @@ export class AuthService {
 
     const password = await bcrypt.hash(input.newPassword, 10);
     await this.authRepository.updateUserPassword(user.id, password);
+    // A new password retires every outstanding refresh token, here and on
+    // other devices. Access tokens live on for at most their 15 minutes.
+    await this.authRepository.incrementTokenVersion(user.id);
   }
 
   /**
@@ -219,9 +195,9 @@ export class AuthService {
     const password = await bcrypt.hash(input.password, 10);
     await this.authRepository.updateUserPassword(user.id, password);
 
-    // Burn the link and end every existing session: whoever prompted the reset
-    // should be the only one left able to use the account.
+    // Burn the link and retire every refresh token: whoever prompted the
+    // reset should be the only one left able to use the account.
     await this.authRepository.deletePasswordResetTokenByHash(tokenHash);
-    await this.authRepository.deleteSessionsByUserId(user.id);
+    await this.authRepository.incrementTokenVersion(user.id);
   }
 }

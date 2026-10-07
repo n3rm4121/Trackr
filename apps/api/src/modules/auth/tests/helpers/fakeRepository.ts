@@ -1,21 +1,12 @@
 import type { AuthRepository } from "../../auth.repository.js";
-import {
-  hashPasswordResetToken,
-  hashRefreshToken,
-} from "../../../../utils/token.js";
+import { hashPasswordResetToken } from "../../../../utils/token.js";
 
 type UserRow = {
   id: number;
   email: string;
   name: string;
   password: string;
-};
-
-type SessionRow = {
-  id: number;
-  userId: number;
-  tokenHash: string;
-  expiresAt: Date;
+  tokenVersion: number;
 };
 
 type PasswordResetTokenRow = {
@@ -32,7 +23,6 @@ type PasswordResetTokenRow = {
  */
 export class FakeAuthRepository {
   users: UserRow[] = [];
-  sessions: SessionRow[] = [];
   passwordResetTokens: PasswordResetTokenRow[] = [];
   private nextUserId = 1;
 
@@ -49,7 +39,7 @@ export class FakeAuthRepository {
     password: string;
     name: string;
   }) {
-    const user: UserRow = { id: this.nextUserId++, ...userData };
+    const user: UserRow = { id: this.nextUserId++, tokenVersion: 1, ...userData };
     this.users.push(user);
     return user;
   }
@@ -62,30 +52,12 @@ export class FakeAuthRepository {
     return user;
   }
 
-  async createSession(session: {
-    userId: number;
-    tokenHash: string;
-    expiresAt: Date;
-  }) {
-    const row: SessionRow = { id: this.sessions.length + 1, ...session };
-    this.sessions.push(row);
-    return row;
-  }
-
-  async findSessionByTokenHash(tokenHash: string) {
-    return this.sessions.find((session) => session.tokenHash === tokenHash);
-  }
-
-  async deleteSessionByTokenHash(tokenHash: string) {
-    this.sessions = this.sessions.filter(
-      (session) => session.tokenHash !== tokenHash,
-    );
-  }
-
-  async deleteSessionsByUserId(userId: number) {
-    this.sessions = this.sessions.filter(
-      (session) => session.userId !== userId,
-    );
+  async incrementTokenVersion(userId: number) {
+    const user = this.users.find((candidate) => candidate.id === userId);
+    if (user) {
+      user.tokenVersion += 1;
+    }
+    return user;
   }
 
   async createPasswordResetToken(token: {
@@ -123,17 +95,6 @@ export class FakeAuthRepository {
     const now = Date.now();
     this.passwordResetTokens = this.passwordResetTokens.filter(
       (token) => token.expiresAt.getTime() > now,
-    );
-  }
-
-  sessionCount() {
-    return this.sessions.length;
-  }
-
-  /** Mirrors the real lookup: hash the presented token, then find it. */
-  findByRawToken(raw: string) {
-    return this.sessions.find(
-      (session) => session.tokenHash === hashRefreshToken(raw),
     );
   }
 

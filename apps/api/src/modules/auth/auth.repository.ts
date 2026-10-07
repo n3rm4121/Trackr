@@ -1,8 +1,7 @@
-import { eq, lt } from "drizzle-orm";
+import { eq, lt, sql } from "drizzle-orm";
 
 import {
   passwordResetTokensTable,
-  sessionsTable,
   usersTable,
 } from "../../db/schema.js";
 import { db } from "../../db/index.js";
@@ -42,41 +41,15 @@ export class AuthRepository {
     return updated;
   }
 
-  // save a new session in the database with the hashed refresh token
-  async createSession(session: {
-    userId: number;
-    tokenHash: string;
-    expiresAt: Date;
-  }) {
-    const [created] = await db
-      .insert(sessionsTable)
-      .values(session)
+  // Retires every outstanding refresh token: they carry the version they
+  // were issued at, and refresh refuses anything older than this.
+  async incrementTokenVersion(userId: number) {
+    const [updated] = await db
+      .update(usersTable)
+      .set({ tokenVersion: sql`${usersTable.tokenVersion} + 1` })
+      .where(eq(usersTable.id, userId))
       .returning();
-    return created;
-  }
-
-  async findSessionByTokenHash(tokenHash: string) {
-    const [session] = await db
-      .select()
-      .from(sessionsTable)
-      .where(eq(sessionsTable.tokenHash, tokenHash));
-    return session;
-  }
-
-  async deleteSessionByTokenHash(tokenHash: string) {
-    await db
-      .delete(sessionsTable)
-      .where(eq(sessionsTable.tokenHash, tokenHash));
-  }
-
-  async deleteSessionsByUserId(userId: number) {
-    await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
-  }
-
-  async deleteExpiredSessions() {
-    await db
-      .delete(sessionsTable)
-      .where(lt(sessionsTable.expiresAt, new Date()));
+    return updated;
   }
 
   async createPasswordResetToken(token: {

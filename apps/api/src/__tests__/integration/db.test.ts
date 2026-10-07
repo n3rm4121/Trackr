@@ -84,12 +84,12 @@ describe("database connection", () => {
   it("has the schema migrations applied", async () => {
     const result = await db.execute<{ table_name: string }>(
       sql`select table_name from information_schema.tables
-          where table_schema = 'public' and table_name in ('users', 'sessions')
+          where table_schema = 'public' and table_name in ('users', 'applications')
           order by table_name`,
     );
 
     expect(result.rows.map((row) => row.table_name)).toEqual([
-      "sessions",
+      "applications",
       "users",
     ]);
   });

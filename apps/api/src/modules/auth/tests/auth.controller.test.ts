@@ -278,20 +278,22 @@ describe("AuthController", () => {
   });
 
   describe("logout", () => {
-    it("should call service logout if refresh cookie exists, clear cookies, and send 204", async () => {
+    // Stateless: signing out is dropping the cookies. No service call, with
+    // or without a refresh cookie present.
+    it("clears cookies and sends 204 when a refresh cookie exists", async () => {
       mockReq = {
         cookies: { [REFRESH_COOKIE]: "some-refresh-token" },
       };
 
       await controller.logout(mockReq as Request, mockRes as Response);
 
-      expect(serviceInstance.logout).toHaveBeenCalledWith("some-refresh-token");
+      expect(serviceInstance.logout).not.toHaveBeenCalled();
       expect(clearAuthCookies).toHaveBeenCalledWith(mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(204);
       expect(mockRes.send).toHaveBeenCalled();
     });
 
-    it("should skip service logout if no refresh cookie exists, but still clear cookies and send 204", async () => {
+    it("clears cookies and sends 204 when no refresh cookie exists", async () => {
       mockReq = {
         cookies: {},
       };

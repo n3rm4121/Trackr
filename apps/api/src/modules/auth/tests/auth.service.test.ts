@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { AuthService } from "../auth.service.js";
+import config from "../../../config/config.js";
 import {
   verifyAccessToken,
+  verifyRefreshToken,
+  signRefreshToken,
   hashPasswordResetToken,
-  hashRefreshToken,
 } from "../../../utils/token.js";
 import { sendPasswordResetEmail } from "../../../utils/mailer.js";
 import { FakeAuthRepository, asRepository } from "./helpers/fakeRepository.js";
@@ -124,21 +127,14 @@ describe("AuthService", () => {
       expect(verifyAccessToken(result.accessToken).userId).toBe(registered.id);
     });
 
-    it("persists only the hash of the refresh token", async () => {
+    it("issues a refresh token that verifies by signature and carries the user version", async () => {
       const result = await service.login(CREDENTIALS);
-      const stored = repo.sessions[0]!;
+      const registered = repo.users[0]!;
 
-      expect(stored.tokenHash).not.toBe(result.refreshToken);
-      expect(stored.tokenHash).toMatch(/^[a-f0-9]{64}$/);
-    });
-
-    it("never stores the raw refresh token", async () => {
-      const result = await service.login(CREDENTIALS);
-
-      expect(repo.findByRawToken(result.refreshToken)).toBeDefined();
-      expect(
-        repo.sessions.some((s) => s.tokenHash === result.refreshToken),
-      ).toBe(false);
+      const payload = verifyRefreshToken(result.refreshToken);
+      expect(payload.userId).toBe(registered.id);
+      expect(payload.tokenVersion).toBe(registered.tokenVersion);
+      expect(payload.jti).toBeTruthy();
     });
 
     it("omits the password from the response", async () => {
@@ -171,11 +167,14 @@ describe("AuthService", () => {
       expect(unknownEmail).toBe(badPassword);
     });
 
-    it("creates a separate session per login", async () => {
-      await service.login(CREDENTIALS);
-      await service.login(CREDENTIALS);
+    it("issues a distinct refresh token per login", async () => {
+      const first = await service.login(CREDENTIALS);
+      const second = await service.login(CREDENTIALS);
 
-      expect(repo.sessionCount()).toBe(2);
+      expect(first.refreshToken).not.toBe(second.refreshToken);
+      expect(verifyRefreshToken(first.refreshToken).jti).not.toBe(
+        verifyRefreshToken(second.refreshToken).jti,
+      );
     });
   });
 
@@ -202,22 +201,28 @@ describe("AuthService", () => {
     });
 
     /**
-     * Rotation is what limits the damage if a token leaks: the second use of
-     * an already-used token is treated as a replay and refused.
+     * Stateless refresh keeps no record of use: the same token refreshes
+     * again until it expires or the version moves on. Theft containment comes
+     * from the short access lifetime plus version revocation, not from replay
+     * detection.
      */
-    it("rejects a refresh token that has already been used", async () => {
+    it("accepts the same refresh token twice", async () => {
       await service.refresh(login.refreshToken);
+
+      await expect(service.refresh(login.refreshToken)).resolves.toBeDefined();
+    });
+
+    it("rejects a token from before a password change", async () => {
+      const created = repo.users[0]!;
+      await service.changePassword(created.id, {
+        currentPassword: CREDENTIALS.password,
+        newPassword: "brand-new-password",
+      });
 
       await expect(service.refresh(login.refreshToken)).rejects.toMatchObject({
         status: 401,
         code: "INVALID_REFRESH_TOKEN",
       });
-    });
-
-    it("leaves one session behind after rotating", async () => {
-      await service.refresh(login.refreshToken);
-
-      expect(repo.sessionCount()).toBe(1);
     });
 
     it("rejects an unknown token", async () => {
@@ -226,60 +231,26 @@ describe("AuthService", () => {
       });
     });
 
-    it("rejects an expired session and deletes it", async () => {
+    it("rejects an expired refresh token", async () => {
       const user = repo.users[0]!;
-      await repo.createSession({
-        userId: user.id,
-        tokenHash: hashRefreshToken("expired-token"),
-        expiresAt: new Date(Date.now() - 1000),
-      });
+      const expired = jwt.sign(
+        { userId: user.id, tokenVersion: user.tokenVersion, jti: "expired" },
+        config.jwtSecret,
+        { expiresIn: "-1s" },
+      );
 
-      await expect(service.refresh("expired-token")).rejects.toMatchObject({
+      await expect(service.refresh(expired)).rejects.toMatchObject({
         status: 401,
         code: "INVALID_REFRESH_TOKEN",
       });
-
-      // only the login session should remain; the expired one is cleaned up
-      expect(repo.sessionCount()).toBe(1);
     });
 
-    it("rejects a session whose user no longer exists, and deletes it", async () => {
-      const orphanToken = "orphan-token";
-      await repo.createSession({
-        userId: 9999,
-        tokenHash: hashRefreshToken(orphanToken),
-        expiresAt: new Date(Date.now() + 60_000),
-      });
+    it("rejects a token whose user no longer exists", async () => {
+      const orphan = signRefreshToken(9999, 1);
 
-      await expect(service.refresh(orphanToken)).rejects.toMatchObject({
+      await expect(service.refresh(orphan)).rejects.toMatchObject({
         status: 401,
       });
-      expect(repo.sessionCount()).toBe(1);
-    });
-  });
-
-  describe("logout", () => {
-    it("deletes the session so the token stops working", async () => {
-      await registerUser();
-      const login = await service.login(CREDENTIALS);
-
-      await service.logout(login.refreshToken);
-
-      expect(repo.sessionCount()).toBe(0);
-      await expect(service.refresh(login.refreshToken)).rejects.toMatchObject({
-        status: 401,
-      });
-    });
-
-    it("leaves other sessions of the same user alone", async () => {
-      await registerUser();
-      const first = await service.login(CREDENTIALS);
-      const second = await service.login(CREDENTIALS);
-
-      await service.logout(first.refreshToken);
-
-      expect(repo.sessionCount()).toBe(1);
-      await expect(service.refresh(second.refreshToken)).resolves.toBeDefined();
     });
   });
 
@@ -487,17 +458,16 @@ describe("AuthService", () => {
     });
 
     /**
-     * Someone who prompted the reset may still be signed in elsewhere, and
-     * whoever prompted it should not be left holding a live session.
+     * Whoever prompted the reset should be the only one left able to use the
+     * account: the version bump retires every refresh token issued before it.
      */
-    it("ends every existing session for that user", async () => {
+    it("retires refresh tokens issued before the reset", async () => {
       const token = emailedResetToken();
       const login = await service.login(CREDENTIALS);
-      expect(repo.sessionCount()).toBe(1);
+      await expect(service.refresh(login.refreshToken)).resolves.toBeDefined();
 
       await service.resetPassword({ token, password: NEW_PASSWORD });
 
-      expect(repo.sessionCount()).toBe(0);
       await expect(service.refresh(login.refreshToken)).rejects.toMatchObject({
         status: 401,
       });
