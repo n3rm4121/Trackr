@@ -30,6 +30,9 @@ export type StatusMeta = {
   title: string;
   dot: string;
   accent: string;
+  // Whisper tint for the column tray, and the hairline under its header.
+  lane: string;
+  edge: string;
 };
 
 export const STATUS_META: Record<Status, StatusMeta> = {
@@ -38,30 +41,40 @@ export const STATUS_META: Record<Status, StatusMeta> = {
     title: "Applied",
     dot: "bg-sky-500",
     accent: "text-sky-600 dark:text-sky-400",
+    lane: "bg-sky-500/[0.07]",
+    edge: "border-sky-500/25",
   },
   screening: {
     id: "screening",
     title: "Screening",
     dot: "bg-violet-500",
     accent: "text-violet-600 dark:text-violet-400",
+    lane: "bg-violet-500/[0.07]",
+    edge: "border-violet-500/25",
   },
   interview: {
     id: "interview",
     title: "Interview Scheduled",
     dot: "bg-amber-500",
     accent: "text-amber-600 dark:text-amber-400",
+    lane: "bg-amber-500/[0.08]",
+    edge: "border-amber-500/25",
   },
   offer: {
     id: "offer",
     title: "Offer",
     dot: "bg-emerald-500",
     accent: "text-emerald-600 dark:text-emerald-400",
+    lane: "bg-emerald-500/[0.08]",
+    edge: "border-emerald-500/25",
   },
   rejected: {
     id: "rejected",
     title: "Rejected",
     dot: "bg-rose-500",
     accent: "text-rose-600 dark:text-rose-400",
+    lane: "bg-rose-500/[0.06]",
+    edge: "border-rose-500/20",
   },
 };
 

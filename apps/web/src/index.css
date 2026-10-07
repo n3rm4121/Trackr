@@ -157,4 +157,13 @@
   .ring-highlighter {
     --tw-ring-color: #F5E62B;
   }
+  /* Desk-blotter dots behind the board lanes. Foreground-based, so the
+     pattern adapts to dark mode on its own. */
+  .board-desk {
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--foreground) 9%, transparent) 1.1px,
+      transparent 1.1px
+    );
+    background-size: 18px 18px;
+  }
 }

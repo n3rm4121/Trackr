@@ -69,17 +69,23 @@ export function BoardColumn({
       data-status={status}
       data-drop-target={highlighted || undefined}
       className={cn(
-        "bg-muted/40 flex max-h-full min-h-0 w-full flex-col rounded-xl border border-transparent md:w-72 md:shrink-0",
-        // The dashed outline and tint only land on the column under the
-        // pointer, so at most one column ever reads as a target.
-        highlighted &&
-          "border-primary/70 bg-primary/10 border-dashed shadow-[inset_0_0_0_1px_var(--primary)]",
-        // Highlight the Offer column with a subtle accent ring
-        isOffer && "ring-2 ring-emerald-500/30 bg-emerald-500/5 border-emerald-500/20",
+        "flex max-h-full min-h-0 w-full flex-col rounded-xl border md:w-72 md:shrink-0",
+        // The drop-target tint replaces the lane wash while dragging, so two
+        // background fills never fight over the same column.
+        highlighted
+          ? "border-primary/70 bg-primary/10 border-dashed shadow-[inset_0_0_0_1px_var(--primary)]"
+          : cn(meta.lane, "border-foreground/10"),
+        // The Offer lane keeps its ring; the wash now comes from meta.lane.
+        isOffer && "ring-2 ring-emerald-500/30",
       )}
     >
       {showHeader ? (
-        <header className="flex items-center gap-2 px-3 pt-3 pb-2">
+        <header
+          className={cn(
+            "flex items-center gap-2 border-b px-3 pt-3 pb-2",
+            meta.edge,
+          )}
+        >
           <span
             aria-hidden
             className={cn("size-2 shrink-0 rounded-full", meta.dot)}

@@ -200,7 +200,7 @@ export function Board({
         {desktop ? (
           <div
             data-testid="board"
-            className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-3 pb-1 sm:px-4"
+            className="board-desk min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-3 pb-1 sm:px-4"
           >
             <div className="flex h-full min-h-0 items-stretch gap-3 py-3">
               {STATUSES.map((status) => renderColumn(status))}

@@ -105,7 +105,61 @@ function SortButton({
   );
 }
 
-/** Flat sortable table over every visible application. */
+function RowMenu({
+  application,
+  onOpen,
+  onEdit,
+  onDelete,
+  onMove,
+}: RowHandlers & { application: Application }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label={`Actions for ${application.company}`}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted rounded p-1.5"
+          />
+        }
+      >
+        <IconMore className="size-4" aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>{application.company}</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => onOpen(application.id)}>
+          Open details
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onEdit(application.id)}>
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Move to</DropdownMenuLabel>
+        {STATUSES.filter((status) => status !== application.status).map(
+          (status) => (
+            <DropdownMenuItem
+              key={status}
+              onClick={() => onMove(application.id, status)}
+            >
+              {STATUS_META[status].title}
+            </DropdownMenuItem>
+          ),
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => onDelete(application.id)}
+        >
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** Flat sortable table over every visible application. On small screens the
+ *  table becomes stacked cards with the same sort controls, so nothing
+ *  scrolls sideways. */
 export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
   const { board, visibleColumns } = useBoard();
   const [sortKey, setSortKey] = useState<SortKey>("appliedAt");
@@ -128,16 +182,18 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
     }
   }
 
+  const handlers = { onOpen, onEdit, onDelete, onMove };
+
   return (
     <div
       data-testid="table-view"
       className="min-h-0 flex-1 overflow-auto px-3 pt-3 pb-8 sm:px-4"
     >
-      <div className="bg-card overflow-hidden rounded-xl border">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+      <div className="bg-card overflow-x-auto rounded-xl border">
+        <table className="w-full min-w-[840px] border-collapse text-left text-xs sm:text-sm">
           <thead>
             <tr className="bg-muted/50 text-muted-foreground border-b text-xs">
-              <th scope="col" className="px-3 py-2.5 font-medium">
+              <th scope="col" className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium">
                 <SortButton
                   label="Company"
                   sortKey="company"
@@ -148,17 +204,17 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
               </th>
               <th
                 scope="col"
-                className="hidden px-3 py-2.5 font-medium lg:table-cell"
+                className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium"
               >
                 Location
               </th>
               <th
                 scope="col"
-                className="hidden px-3 py-2.5 font-medium xl:table-cell"
+                className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium"
               >
                 Salary
               </th>
-              <th scope="col" className="px-3 py-2.5 font-medium">
+              <th scope="col" className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium">
                 <SortButton
                   label="Status"
                   sortKey="status"
@@ -167,7 +223,7 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
                   onSort={handleSort}
                 />
               </th>
-              <th scope="col" className="px-3 py-2.5 font-medium">
+              <th scope="col" className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium">
                 <SortButton
                   label="Applied"
                   sortKey="appliedAt"
@@ -178,7 +234,7 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
               </th>
               <th
                 scope="col"
-                className="hidden px-3 py-2.5 font-medium md:table-cell"
+                className="px-2 py-2 sm:px-3 sm:py-2.5 font-medium"
               >
                 <SortButton
                   label="Updated"
@@ -190,11 +246,11 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
               </th>
               <th
                 scope="col"
-                className="hidden px-3 py-2.5 text-right font-medium sm:table-cell"
+                className="px-2 py-2 sm:px-3 sm:py-2.5 text-right font-medium"
               >
                 Notes
               </th>
-              <th scope="col" className="px-3 py-2.5 text-right font-medium">
+              <th scope="col" className="px-2 py-2 sm:px-3 sm:py-2.5 text-right font-medium">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -209,7 +265,7 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
                   data-application-id={application.id}
                   className="hover:bg-muted/40 transition-colors"
                 >
-                  <td className="px-3 py-2.5">
+                  <td className="px-2 py-2 sm:px-3 sm:py-2.5">
                     <button
                       type="button"
                       onClick={() => onOpen(application.id)}
@@ -224,19 +280,19 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
                         <span className="block truncate font-semibold">
                           {application.company}
                         </span>
-                        <span className="text-muted-foreground block max-w-44 truncate text-xs">
+                        <span className="text-muted-foreground block max-w-28 truncate text-xs sm:max-w-44">
                           {application.role}
                         </span>
                       </span>
                     </button>
                   </td>
-                  <td className="text-muted-foreground hidden max-w-32 truncate px-3 py-2.5 text-xs lg:table-cell">
+                  <td className="text-muted-foreground max-w-32 truncate px-2 py-2 text-xs sm:px-3 sm:py-2.5">
                     {application.location || "—"}
                   </td>
-                  <td className="text-muted-foreground hidden max-w-32 truncate px-3 py-2.5 text-xs tabular-nums xl:table-cell">
+                  <td className="text-muted-foreground max-w-32 truncate px-2 py-2 text-xs tabular-nums sm:px-3 sm:py-2.5">
                     {application.salary || "—"}
                   </td>
-                  <td className="px-3 py-2.5">
+                  <td className="px-2 py-2 sm:px-3 sm:py-2.5">
                     <Badge variant="outline" className="gap-1.5 font-normal">
                       <span
                         aria-hidden
@@ -245,63 +301,17 @@ export function TableView({ onOpen, onEdit, onDelete, onMove }: RowHandlers) {
                       {meta.title}
                     </Badge>
                   </td>
-                  <td className="text-muted-foreground px-3 py-2.5 text-xs whitespace-nowrap">
+                  <td className="text-muted-foreground px-2 py-2 sm:px-3 sm:py-2.5 text-xs whitespace-nowrap">
                     {shortDate(application.appliedAt)}
                   </td>
-                  <td className="text-muted-foreground hidden px-3 py-2.5 text-xs whitespace-nowrap md:table-cell">
+                  <td className="text-muted-foreground px-2 py-2 text-xs whitespace-nowrap sm:px-3 sm:py-2.5">
                     {shortDate(application.lastActivityAt)}
                   </td>
-                  <td className="text-muted-foreground hidden px-3 py-2.5 text-right text-xs tabular-nums sm:table-cell">
+                  <td className="text-muted-foreground px-2 py-2 text-right text-xs tabular-nums sm:px-3 sm:py-2.5">
                     {application.notes.length}
                   </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={
-                          <button
-                            type="button"
-                            aria-label={`Actions for ${application.company}`}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted rounded p-1.5"
-                          />
-                        }
-                      >
-                        <IconMore className="size-4" aria-hidden />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>
-                          {application.company}
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onClick={() => onOpen(application.id)}
-                        >
-                          Open details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onEdit(application.id)}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Move to</DropdownMenuLabel>
-                        {STATUSES.filter(
-                          (status) => status !== application.status,
-                        ).map((status) => (
-                          <DropdownMenuItem
-                            key={status}
-                            onClick={() => onMove(application.id, status)}
-                          >
-                            {STATUS_META[status].title}
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => onDelete(application.id)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <td className="px-2 py-2 sm:px-3 sm:py-2.5 text-right">
+                    <RowMenu application={application} {...handlers} />
                   </td>
                 </tr>
               );
