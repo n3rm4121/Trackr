@@ -196,13 +196,15 @@ export function Board({
         }
       }}
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col">
         {desktop ? (
           <div
             data-testid="board"
-            className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+            className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-3 pb-1 sm:px-4"
           >
-            {STATUSES.map((status) => renderColumn(status))}
+            <div className="flex h-full min-h-0 items-stretch gap-3 py-3">
+              {STATUSES.map((status) => renderColumn(status))}
+            </div>
           </div>
         ) : (
           <div data-testid="board" className="flex min-h-0 flex-1 flex-col">

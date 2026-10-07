@@ -20,17 +20,16 @@ import { initials } from "@/lib/date";
 import type { BoardView } from "@/lib/use-board-view";
 import { PaperclipIcon } from "@/components/navbar";
 import { useTheme } from "@/lib/use-theme";
-import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { StatStrip } from "./stat-strip";
 import { ViewSwitcher } from "./view-switcher";
 
 /**
- * The board's top bar.
+ * The board's top bar, in two rows.
  *
- * On desktop: search field, Add button, Stats button, Export button, theme
- * toggle, stats chips (total/interviews/offers).
- * On mobile: search icon, avatar dropdown (account actions), theme toggle in dropdown.
- * The avatar dropdown is only shown on mobile.
+ * Row one is the app nav: logo, search, theme toggle, account menu.
+ * Row two is the board controls: stats summary, view switcher, Add, Stats,
+ * Export. The account menu carries the same actions on small screens, where
+ * the row-two buttons are hidden.
  */
 export function BoardToolbar({
   userName,
@@ -56,12 +55,11 @@ export function BoardToolbar({
   onViewChange: (next: BoardView) => void;
 }) {
   const { theme, toggle } = useTheme();
-  const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   const field = (id: string, autoFocus: boolean) => (
-    <div className="relative">
+    <div className="relative w-full">
       <IconSearch
         className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
         aria-hidden
@@ -97,202 +95,172 @@ export function BoardToolbar({
 
   return (
     <header className="shrink-0 bg-background/95 backdrop-blur-sm">
-      <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
-        <div className="mr-auto flex min-w-0 items-center gap-2 truncate text-sm font-semibold">
-          <Link
-            to="/"
-            className="flex items-center gap-2 font-heading font-semibold text-lg text-foreground hover:opacity-80 transition-opacity"
-            aria-label={`${config.site.name} - Home`}
-          >
-            <PaperclipIcon className="w-6 h-6 text-accent" />
-            <span className="hidden sm:block">{config.site.name}</span>
-          </Link>
-          {desktop ? (
-            <StatStrip
-              total={stats.total}
-              activeInterviews={stats.activeInterviews}
-              offers={stats.offers}
-            />
-          ) : userName ? (
-            <span className="text-muted-foreground hidden font-normal sm:inline">
-              {userName}
-            </span>
-          ) : null}
+      {/* Row one: app nav */}
+      <nav
+        aria-label="Primary"
+        className="flex h-14 items-center gap-2 px-3 sm:px-4"
+      >
+        <Link
+          to="/"
+          className="flex shrink-0 items-center gap-2 font-heading font-semibold text-lg text-foreground hover:opacity-80 transition-opacity"
+          aria-label={`${config.site.name} - Home`}
+        >
+          <PaperclipIcon className="w-6 h-6 text-accent" />
+          <span className="hidden sm:block">{config.site.name}</span>
+        </Link>
+
+        <div className="mx-auto hidden w-full max-w-md sm:block">
+          {field("board-search", false)}
         </div>
 
-        {desktop ? (
-          <div className="w-56">{field("board-search", false)}</div>
-        ) : null}
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="sm:hidden"
+            aria-label={searchOpen ? "Close search" : "Open search"}
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen((open) => !open)}
+          >
+            <IconSearch className="size-4" aria-hidden />
+          </Button>
 
-        <ViewSwitcher view={view} onChange={onViewChange} />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggle}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+          >
+            {theme === "dark" ? (
+              <IconSun className="size-4" aria-hidden />
+            ) : (
+              <IconMoon className="size-4" aria-hidden />
+            )}
+          </Button>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="sm:hidden"
-          aria-label={searchOpen ? "Close search" : "Open search"}
-          aria-expanded={searchOpen}
-          onClick={() => setSearchOpen((open) => !open)}
-        >
-          <IconSearch className="size-4" aria-hidden />
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          className="hidden sm:inline-flex bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground/90 font-medium"
-          onClick={onAdd}
-        >
-          <IconAdd className="size-4" aria-hidden />
-          Add
-        </Button>
-
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onOpenStats}
-          className="hidden md:inline-flex"
-        >
-          <IconChartBar className="size-4" aria-hidden />
-          Stats
-        </Button>
-
-        {/* The bar is tight between md and lg, so the button is the icon alone
-            there and picks up its label once there is room for one. The
-            sr-only span keeps it named for a screen reader either way. */}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onExport}
-          disabled={stats.total === 0}
-          className="hidden md:inline-flex"
-        >
-          <IconDownload className="size-4" aria-hidden />
-          <span className="hidden lg:inline">Export</span>
-          <span className="sr-only lg:hidden">Export CSV</span>
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          className={desktop ? "" : "hidden"}
-          onClick={toggle}
-          aria-label={
-            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-          }
-        >
-          {theme === "dark" ? (
-            <IconSun className="size-4" aria-hidden />
-          ) : (
-            <IconMoon className="size-4" aria-hidden />
+          {userName && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Account menu"
+                    className="rounded-full outline-offset-2"
+                  />
+                }
+              >
+                <Avatar className="size-8">
+                  <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                    {initials(userName ?? "?")}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <p className="truncate px-2 py-1.5 text-sm font-medium">
+                  {userName}
+                </p>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onAdd}
+                  className="sm:hidden"
+                >
+                  <IconAdd className="size-4" aria-hidden />
+                  Add application
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onOpenStats}
+                  className="md:hidden"
+                >
+                  <IconChartBar className="size-4" aria-hidden />
+                  Stats
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onExport}
+                  disabled={stats.total === 0}
+                  className="md:hidden"
+                >
+                  <IconDownload className="size-4" aria-hidden />
+                  Export CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => void navigate({ to: "/settings" })}
+                >
+                  Change password
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onLogout}
+                  className="font-medium text-destructive"
+                >
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
-        </Button>
+        </div>
+      </nav>
 
-        {desktop && userName && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  aria-label="Account menu"
-                  className="rounded-full outline-offset-2"
-                />
-              }
-            >
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
-                  {initials(userName ?? "?")}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <p className="truncate px-2 py-1.5 text-sm font-medium">
-                {userName}
-              </p>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => void navigate({ to: "/settings" })}
-              >
-                Change password
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={onLogout}
-                className="font-medium text-destructive"
-              >
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {!desktop && userName && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  aria-label="Account menu"
-                  className="rounded-full outline-offset-2"
-                />
-              }
-            >
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
-                  {initials(userName ?? "?")}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <p className="truncate px-2 py-1.5 text-sm font-medium">
-                {userName}
-              </p>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={toggle}>
-                {theme === "dark" ? (
-                  <IconSun className="size-4" aria-hidden />
-                ) : (
-                  <IconMoon className="size-4" aria-hidden />
-                )}
-                {theme === "dark" ? "Light mode" : "Dark mode"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onAdd}>
-                <IconAdd className="size-4" aria-hidden />
-                Add application
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onOpenStats}>
-                <IconChartBar className="size-4" aria-hidden />
-                Stats
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onExport} disabled={stats.total === 0}>
-                <IconDownload className="size-4" aria-hidden />
-                Export CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => void navigate({ to: "/settings" })}
-              >
-                Change password
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={onLogout}
-                className="font-medium text-destructive"
-              >
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
-
-      {searchOpen && !desktop ? (
-        <div className="px-3 pb-2 border-t bg-background/50">
+      {searchOpen ? (
+        <div className="border-t px-3 py-2 sm:hidden">
           {field("board-search-mobile", true)}
         </div>
       ) : null}
+
+      {/* Row two: board controls */}
+      <div className="flex items-center gap-2 border-t px-3 py-2 sm:px-4">
+        <div className="hidden min-w-0 md:block">
+          <StatStrip
+            total={stats.total}
+            activeInterviews={stats.activeInterviews}
+            offers={stats.offers}
+          />
+        </div>
+
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <ViewSwitcher view={view} onChange={onViewChange} />
+
+          <Button
+            type="button"
+            size="sm"
+            className="hidden sm:inline-flex bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground/90 font-medium"
+            onClick={onAdd}
+          >
+            <IconAdd className="size-4" aria-hidden />
+            Add
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onOpenStats}
+            className="hidden md:inline-flex"
+          >
+            <IconChartBar className="size-4" aria-hidden />
+            Stats
+          </Button>
+
+          {/* The bar is tight between md and lg, so the button is the icon alone
+              there and picks up its label once there is room for one. The
+              sr-only span keeps it named for a screen reader either way. */}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onExport}
+            disabled={stats.total === 0}
+            className="hidden md:inline-flex"
+          >
+            <IconDownload className="size-4" aria-hidden />
+            <span className="hidden lg:inline">Export</span>
+            <span className="sr-only lg:hidden">Export CSV</span>
+          </Button>
+        </div>
+      </div>
     </header>
   );
 }

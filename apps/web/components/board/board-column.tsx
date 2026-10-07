@@ -33,7 +33,19 @@ export function BoardColumn({
   const meta = STATUS_META[status];
   const displayTitle = title ?? meta.title;
   const [editing, setEditing] = useState(false);
+  // Refreshed from the live title every time editing starts, so a rename
+  // that arrived after first paint is never edited stale.
   const [draft, setDraft] = useState(displayTitle);
+
+  function commit() {
+    const next = draft.trim().slice(0, 50);
+    if (next && next !== displayTitle) {
+      onRename?.(status, next);
+    } else {
+      setDraft(displayTitle);
+    }
+    setEditing(false);
+  }
   // The droppable is what makes the column a valid destination, so it covers
   // the header too rather than only the scrolling area below it. No explicit
   // collision priority: a card under the pointer is closer to the pointer than
@@ -57,7 +69,7 @@ export function BoardColumn({
       data-status={status}
       data-drop-target={highlighted || undefined}
       className={cn(
-        "bg-muted/40 flex min-h-0 min-w-0 flex-col rounded-xl border border-transparent",
+        "bg-muted/40 flex max-h-full min-h-0 w-full flex-col rounded-xl border border-transparent md:w-72 md:shrink-0",
         // The dashed outline and tint only land on the column under the
         // pointer, so at most one column ever reads as a target.
         highlighted &&
@@ -77,11 +89,7 @@ export function BoardColumn({
               className="min-w-0 flex-1"
               onSubmit={(event) => {
                 event.preventDefault();
-                const next = draft.trim().slice(0, 50);
-                if (next) {
-                  onRename?.(status, next);
-                }
-                setEditing(false);
+                commit();
               }}
             >
               <Input
@@ -91,15 +99,7 @@ export function BoardColumn({
                 aria-label={`Rename ${displayTitle} column`}
                 className="h-7 text-sm font-semibold"
                 onChange={(event) => setDraft(event.target.value)}
-                onBlur={() => {
-                  const next = draft.trim().slice(0, 50);
-                  if (next && next !== displayTitle) {
-                    onRename?.(status, next);
-                  } else {
-                    setDraft(displayTitle);
-                  }
-                  setEditing(false);
-                }}
+                onBlur={commit}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
                     setDraft(displayTitle);
@@ -111,9 +111,30 @@ export function BoardColumn({
           ) : (
             <h2
               id={`column-${status}`}
-              className="min-w-0 flex-1 truncate text-sm font-semibold"
+              className="min-w-0 flex-1 text-sm font-semibold"
             >
-              {displayTitle}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onRename) {
+                    setDraft(displayTitle);
+                    setEditing(true);
+                  }
+                }}
+                title={onRename ? "Click to rename" : undefined}
+                aria-label={
+                  onRename
+                    ? `Rename ${displayTitle} column`
+                    : `${displayTitle} column`
+                }
+                className={cn(
+                  "block w-full truncate text-left",
+                  onRename &&
+                    "cursor-text rounded hover:text-primary hover:underline hover:decoration-dotted hover:underline-offset-4",
+                )}
+              >
+                {displayTitle}
+              </button>
             </h2>
           )}
           <span
@@ -122,22 +143,6 @@ export function BoardColumn({
           >
             {count}
           </span>
-          {onRename ? (
-            <button
-              type="button"
-              onClick={() => {
-                setDraft(displayTitle);
-                setEditing(true);
-              }}
-              aria-label={`Rename ${displayTitle} column`}
-              title={`Rename ${displayTitle}`}
-              className="text-muted-foreground hover:bg-background hover:text-foreground rounded-md border p-1 transition-colors"
-            >
-              <span aria-hidden className="block size-3.5 text-xs leading-none">
-                ✎
-              </span>
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={() => onQuickAdd(status)}

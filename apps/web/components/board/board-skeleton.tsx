@@ -15,13 +15,13 @@ export function BoardSkeleton() {
           <Skeleton key={index} className="h-8 w-40 rounded-full" />
         ))}
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex min-h-0 flex-1 gap-3 overflow-hidden px-1 py-3">
         {STATUSES.map((status, columnIndex) => (
           <section
             key={status}
             aria-label={STATUS_META[status].title}
             className={cn(
-              "bg-muted/40 flex min-h-0 flex-col rounded-xl p-3",
+              "bg-muted/40 flex max-h-full min-h-0 w-72 shrink-0 flex-col rounded-xl p-3",
               status === "offer" && "ring-2 ring-emerald-500/30 bg-emerald-500/5 border-emerald-500/20",
             )}
           >
