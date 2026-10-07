@@ -117,7 +117,7 @@ function ResetPasswordPage() {
           error={fieldErrors.confirmPassword}
         />
         <AuthError message={formError} />
-        <Button type="submit" disabled={resetPassword.isPending}>
+        <Button type="submit" variant="accent" disabled={resetPassword.isPending}>
           {resetPassword.isPending ? "Saving…" : "Reset password"}
         </Button>
       </form>

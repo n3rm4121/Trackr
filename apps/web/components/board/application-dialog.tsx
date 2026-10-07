@@ -375,7 +375,7 @@ function ApplicationForm({
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" variant="accent" disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </Button>
         </DialogFooter>

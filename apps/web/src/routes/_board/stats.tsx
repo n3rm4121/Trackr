@@ -158,7 +158,7 @@ function Stats() {
                         className="hover:bg-muted/60 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors"
                       >
                         <Avatar className="size-8 shrink-0">
-                          <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                          <AvatarFallback className="bg-accent/15 text-accent-foreground text-[11px] font-semibold">
                             {initials(application.company)}
                           </AvatarFallback>
                         </Avatar>

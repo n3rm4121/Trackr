@@ -147,7 +147,7 @@ export function Navbar() {
                   }
                 >
                   <Avatar className="size-8">
-                    <AvatarFallback className="bg-accent/10 text-accent text-xs font-semibold">
+                    <AvatarFallback className="bg-accent/15 text-accent-foreground text-xs font-semibold">
                       {initials(userName)}
                     </AvatarFallback>
                   </Avatar>
@@ -195,7 +195,8 @@ export function Navbar() {
                 <Link to="/signup">
                   <Button
                     size="sm"
-                    className="text-sm font-medium bg-accent text-accent-foreground hover:brightness-95 active:brightness-105"
+                    variant="accent"
+                    className="text-sm font-medium"
                   >
                     Sign up
                   </Button>

@@ -101,7 +101,8 @@ function Hero() {
               <Link to="/signup">
                 <Button
                   size="lg"
-                  className="w-full bg-accent px-8 py-3 text-base font-semibold text-accent-foreground hover:brightness-95 active:brightness-105 sm:w-auto"
+                  variant="accent"
+                  className="w-full px-8 py-3 text-base font-semibold sm:w-auto"
                 >
                   Start tracking free
                 </Button>
@@ -787,12 +788,7 @@ function ClosingCta() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/signup">
-              <Button
-                size="lg"
-                className="w-full bg-foreground px-8 py-3 text-base font-semibold text-background hover:opacity-90 sm:w-auto"
-              >
-                Create your board
-              </Button>
+              <Button size="lg">Create your board</Button>
             </Link>
             <Link to="/about">
               <Button

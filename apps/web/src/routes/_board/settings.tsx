@@ -126,7 +126,7 @@ function SettingsPage() {
             error={fieldErrors.confirmPassword}
           />
           <AuthError message={formError} />
-          <Button type="submit" disabled={changePassword.isPending}>
+          <Button type="submit" variant="accent" disabled={changePassword.isPending}>
             {changePassword.isPending ? "Changing…" : "Change password"}
           </Button>
         </form>

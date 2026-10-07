@@ -83,7 +83,7 @@ function SignupPage() {
             error={fieldErrors.password}
           />
           <AuthError message={formError} />
-          <Button type="submit" disabled={register.isPending}>
+          <Button type="submit" variant="accent" disabled={register.isPending}>
             {register.isPending ? "Creating account…" : "Sign up"}
           </Button>
         </form>

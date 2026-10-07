@@ -81,7 +81,7 @@ function LoginPage() {
             </Link>
           </div>
           <AuthError message={formError} />
-          <Button type="submit" disabled={login.isPending}>
+          <Button type="submit" variant="accent" disabled={login.isPending}>
             {login.isPending ? "Logging in…" : "Log in"}
           </Button>
         </form>

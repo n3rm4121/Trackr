@@ -83,7 +83,7 @@ function ForgotPasswordPage() {
           error={fieldErrors.email}
         />
         <AuthError message={formError} />
-        <Button type="submit" disabled={forgotPassword.isPending}>
+        <Button type="submit" variant="accent" disabled={forgotPassword.isPending}>
           {forgotPassword.isPending ? "Sending…" : "Send reset link"}
         </Button>
       </form>

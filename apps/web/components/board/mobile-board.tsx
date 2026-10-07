@@ -131,6 +131,7 @@ export function MobileBoard({
 
       <Button
         type="button"
+        variant="accent"
         aria-label={`Add application to ${titles?.[active] ?? STATUS_META[active].title}`}
         onClick={() => onAdd(active)}
         className="absolute right-4 bottom-4 z-20 size-14 rounded-full shadow-lg shadow-black/25"

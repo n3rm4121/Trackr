@@ -154,7 +154,7 @@ export function BoardToolbar({
                 }
               >
                 <Avatar className="size-8">
-                  <AvatarFallback className="bg-accent/10 text-accent text-[11px] font-semibold">
+                  <AvatarFallback className="bg-accent/15 text-accent-foreground text-[11px] font-semibold">
                     {initials(userName ?? "?")}
                   </AvatarFallback>
                 </Avatar>
@@ -226,7 +226,8 @@ export function BoardToolbar({
           <Button
             type="button"
             size="sm"
-            className="hidden sm:inline-flex bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground/90 font-medium"
+            variant="accent"
+            className="hidden sm:inline-flex font-medium"
             onClick={onAdd}
           >
             <IconAdd className="size-4" aria-hidden />

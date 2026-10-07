@@ -19,7 +19,7 @@ export function EmptyBoard({ onAdd }: { onAdd: () => void }) {
           Applied column. You can drag it across as things progress.
         </p>
       </div>
-      <Button type="button" onClick={onAdd} className="bg-accent text-accent-foreground hover:brightness-95 active:brightness-105">
+      <Button type="button" variant="accent" onClick={onAdd}>
         <IconAdd className="size-4 mr-2" aria-hidden />
         Add your first application
       </Button>
@@ -52,7 +52,7 @@ export function BoardError({
           {message}
         </p>
       </div>
-      <Button type="button" onClick={onRetry}>
+      <Button type="button" variant="accent" onClick={onRetry}>
         Try again
       </Button>
     </div>
