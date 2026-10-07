@@ -15,19 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  IconAdd,
-  IconChartBar,
-  IconDownload,
-  IconMoon,
-  IconSearch,
-  IconSun,
-} from "@/components/icons";
+import { IconAdd, IconChartBar, IconDownload, IconMoon, IconSearch, IconSun } from "@/components/icons";
 import { initials } from "@/lib/date";
+import type { BoardView } from "@/lib/use-board-view";
 import { PaperclipIcon } from "@/components/navbar";
 import { useTheme } from "@/lib/use-theme";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { StatStrip } from "./stat-strip";
+import { ViewSwitcher } from "./view-switcher";
 
 /**
  * The board's top bar.
@@ -46,6 +41,8 @@ export function BoardToolbar({
   onOpenStats,
   onExport,
   stats,
+  view,
+  onViewChange,
 }: {
   userName?: string;
   search: string;
@@ -55,6 +52,8 @@ export function BoardToolbar({
   onOpenStats: () => void;
   onExport: () => void;
   stats: { total: number; activeInterviews: number; offers: number };
+  view: BoardView;
+  onViewChange: (next: BoardView) => void;
 }) {
   const { theme, toggle } = useTheme();
   const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
@@ -124,6 +123,8 @@ export function BoardToolbar({
         {desktop ? (
           <div className="w-56">{field("board-search", false)}</div>
         ) : null}
+
+        <ViewSwitcher view={view} onChange={onViewChange} />
 
         <Button
           type="button"

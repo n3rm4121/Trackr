@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Board } from "@/components/board/board";
+import { ListView } from "@/components/board/list-view";
+import { TableView } from "@/components/board/table-view";
 import { BoardSkeleton } from "@/components/board/board-skeleton";
 import {
   BoardError,
@@ -20,6 +22,7 @@ import { useCurrentUser, useLogout } from "@/lib/auth";
 import { downloadApplicationsCsv } from "@/lib/csv";
 import { toDateInputValue } from "@/lib/date";
 import { DESKTOP_BOARD_QUERY, useMediaQuery } from "@/lib/use-media-query";
+import { useBoardView } from "@/lib/use-board-view";
 
 export const Route = createFileRoute("/_board/dashboard")({
   // ?open=<id> opens a card's details on arrival, which is how the stats page
@@ -41,6 +44,7 @@ function Dashboard() {
   const { data } = useCurrentUser();
   const logout = useLogout();
   const desktop = useMediaQuery(DESKTOP_BOARD_QUERY);
+  const { view, setView } = useBoardView();
   const {
     status,
     loadError,
@@ -195,6 +199,8 @@ function Dashboard() {
         onOpenStats={() => void navigate({ to: "/stats" })}
         onExport={handleExport}
         stats={stats}
+        view={view}
+        onViewChange={setView}
       />
 
       {status === "loading" ? (
@@ -209,15 +215,32 @@ function Dashboard() {
         <NoSearchResults query={search.trim()} onClear={() => setSearch("")} />
       ) : (
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <Board
-            onQuickAdd={(next) => setDialog({ mode: "add", status: next })}
-            onOpen={showDetails}
-            onEdit={(id) => setDialog({ mode: "edit", id })}
-            onDelete={setPendingDelete}
-            onMove={handleMove}
-            onOpenActions={setActionSheetId}
-            onRevert={handleRevert}
-          />
+          {view === "list" ? (
+            <ListView
+              onOpen={showDetails}
+              onEdit={(id) => setDialog({ mode: "edit", id })}
+              onDelete={setPendingDelete}
+              onMove={handleMove}
+              onQuickAdd={(next) => setDialog({ mode: "add", status: next })}
+            />
+          ) : view === "table" ? (
+            <TableView
+              onOpen={showDetails}
+              onEdit={(id) => setDialog({ mode: "edit", id })}
+              onDelete={setPendingDelete}
+              onMove={handleMove}
+            />
+          ) : (
+            <Board
+              onQuickAdd={(next) => setDialog({ mode: "add", status: next })}
+              onOpen={showDetails}
+              onEdit={(id) => setDialog({ mode: "edit", id })}
+              onDelete={setPendingDelete}
+              onMove={handleMove}
+              onOpenActions={setActionSheetId}
+              onRevert={handleRevert}
+            />
+          )}
         </div>
       )}
 

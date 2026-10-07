@@ -18,12 +18,14 @@ import {
   InboxIcon,
   KanbanIcon,
   LinkIcon,
+  ListViewIcon,
   MapPinIcon,
   Moon01Icon,
   MoreVerticalIcon,
   NoteIcon,
   Search01Icon,
   Sun01Icon,
+  TableIcon,
   Tick02Icon,
   TrashIcon,
   Spinner,
@@ -59,11 +61,13 @@ export const IconFilter = boardIcon(FilterIcon);
 export const IconInbox = boardIcon(InboxIcon);
 export const IconKanban = boardIcon(KanbanIcon);
 export const IconLink = boardIcon(LinkIcon);
+export const IconList = boardIcon(ListViewIcon);
 export const IconMapPin = boardIcon(MapPinIcon);
 export const IconMoon = boardIcon(Moon01Icon);
 export const IconMore = boardIcon(MoreVerticalIcon);
 export const IconNote = boardIcon(NoteIcon);
 export const IconSearch = boardIcon(Search01Icon);
 export const IconSun = boardIcon(Sun01Icon);
+export const IconTable = boardIcon(TableIcon);
 export const IconTrash = boardIcon(TrashIcon);
 export const IconSpinner = boardIcon(Spinner);
